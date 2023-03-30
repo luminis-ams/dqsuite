@@ -7,6 +7,7 @@ import com.amazon.deequ.checks.{Check, CheckLevel}
 import com.amazon.deequ.metrics.Metric
 import dataquality.config.{AnalyzerConfig, AnomalyDetectionConfig, CheckConfig, SourceConfig}
 
+import java.time.Instant
 import scala.reflect.runtime.currentMirror
 import scala.tools.reflect.ToolBox
 
@@ -63,6 +64,7 @@ object DeequFactory {
   }
 
   private def buildAnomalyDetector(
+    datasetDate: Option[Instant],
     config: AnomalyDetectionConfig,
     withTags: Map[String, String] = Map.empty,
   ): Option[AnomalyDetectionInstance] = {
@@ -81,22 +83,27 @@ object DeequFactory {
 
     val level = CheckLevel.withName(config.level.toString.capitalize)
     val description = config.description.getOrElse(s"Anomaly detected for ${config.column}")
+
+    val dateTo = datasetDate.getOrElse(Instant.now()).toEpochMilli
+    val dateFrom = config.historyWindow.map(w => dateTo - w)
+
     val anomalyCheckConfig = AnomalyCheckConfig(
       level,
       description,
       config.withTags ++ withTags,
-      config.afterDate.map(_.toEpochMilli),
-      config.beforeDate.map(_.toEpochMilli),
+      dateFrom,
+      dateFrom.map(_ => dateTo),
     )
 
     Some(AnomalyDetectionInstance(analyser, strategy, anomalyCheckConfig))
   }
 
   def buildAnomalyDetectors(
+    datasetDate: Option[Instant],
     config: SourceConfig,
     withTags: Map[String, String] = Map.empty,
   ): Seq[AnomalyDetectionInstance] = {
-    config.anomalyDetection.flatMap(DeequFactory.buildAnomalyDetector(_, config.tags ++ withTags))
+    config.anomalyDetection.flatMap(DeequFactory.buildAnomalyDetector(datasetDate, _, config.tags ++ withTags))
   }
 }
 
@@ -104,5 +111,4 @@ case class AnomalyDetectionInstance(
   analyser: Analyzer[_ <: State[_], Metric[Double]],
   strategy: AnomalyDetectionStrategy,
   config: AnomalyCheckConfig,
-) {
-}
+) {}

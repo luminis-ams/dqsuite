@@ -17,6 +17,7 @@ object ConfigLoader {
 
   implicit val stringLoader: ConfigLoader[String] = ConfigLoader(_.getString)
   implicit val booleanLoader: ConfigLoader[Boolean] = ConfigLoader(_.getBoolean)
+  implicit val longLoader: ConfigLoader[Long] = ConfigLoader(_.getLong)
 
   implicit val configLoader: ConfigLoader[Config] = ConfigLoader(_.getConfig)
   implicit val configurationLoader: ConfigLoader[Configuration] = configLoader.map(Configuration)

@@ -54,8 +54,7 @@ case class AnomalyDetectionConfig(
   strategy: String,
   withTags: Map[String, String],
   description: Option[String],
-  afterDate: Option[Instant],
-  beforeDate: Option[Instant],
+  historyWindow: Option[Long],
   enabled: Boolean,
 )
 
@@ -70,8 +69,7 @@ object AnomalyDetectionConfig {
       c.get[String]("strategy"),
       c.getOptional[Map[String, String]]("with_tags").getOrElse(Map.empty),
       c.getOptional[String]("description"),
-      c.getOptional[String]("after_date").map(Instant.parse),
-      c.getOptional[String]("before_date").map(Instant.parse),
+      c.getOptional[Long]("history_window").map(_ * 1000), // Convert to milliseconds
       c.getOptional[Boolean]("enabled").getOrElse(true)
     )
   }

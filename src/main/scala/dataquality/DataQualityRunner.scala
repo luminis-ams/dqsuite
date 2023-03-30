@@ -7,10 +7,9 @@ import com.amazon.deequ.repository.fs.FileSystemMetricsRepository
 import com.amazon.deequ.repository.{MetricsRepository, ResultKey}
 import com.amazon.deequ.suggestions.{ConstraintSuggestionRunner, Rules}
 import com.amazon.deequ.{VerificationResult, VerificationSuite}
+import com.amazonaws.services.glue.GlueContext
 import com.amazonaws.services.glue.log.GlueLogger
-import com.amazonaws.services.glue.util.{GlueArgParser, Job, JsonOptions}
-import com.amazonaws.services.glue.{DynamicFrame, GlueContext}
-import dataquality.config.DataQualityConfig.loadStream
+import com.amazonaws.services.glue.util.{GlueArgParser, Job}
 import dataquality.config.{DataQualityConfig, SourceConfig}
 import dataquality.respository.timestream.TimestreamMetricsRepositoryBuilder
 import dataquality.utils.HdfsUtils
@@ -18,6 +17,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
 
 import java.net.URI
+import java.time.Instant
 import scala.jdk.CollectionConverters.mapAsJavaMapConverter
 
 object DataQualityRunner {
@@ -68,16 +68,8 @@ object DataQualityRunner {
           TimestreamMetricsRepositoryBuilder.builder
             .useTable(repoArgs.database, repoArgs.table)
             .build)
-      val statePersister = HdfsStateProvider(
-        spark,
-        metricsPath.resolve("state/").toString,
-        numPartitionsForHistogram = 10,
-        allowOverwrite = true
-      )
-      // Identifier is the metric name. Thus we need better namespacing.
-      // Add a staging and final aggregated state. Flip between two is changes are not quarantined.
 
-      val result = runValidator(df, resultKey, resultPath, metricsRepo, statePersister, sourceConfig)
+      val result = runValidator(df, resultKey, resultPath, metricsRepo, sourceConfig)
       result.map(r => r.status) match {
         case Some(CheckStatus.Success) => logger.info("Validation succeeded")
         case Some(CheckStatus.Warning) => logger.warn("Validation succeeded with warnings")
@@ -131,7 +123,6 @@ object DataQualityRunner {
     resultKey: ResultKey,
     resultPath: URI,
     repository: MetricsRepository,
-    statePersister: StatePersister,
     sourceConfig: SourceConfig,
   ): Option[VerificationResult] = {
     logger.info("Running validator")
@@ -147,6 +138,7 @@ object DataQualityRunner {
     }
 
     val anomalyDetectors = DeequFactory.buildAnomalyDetectors(
+      Some(Instant.ofEpochMilli(resultKey.dataSetDate)),
       sourceConfig,
       Map("source" -> resultKey.tags("source"))
     )
@@ -166,7 +158,6 @@ object DataQualityRunner {
       .addChecks(checks)
       .addRequiredAnalyzers(analyzers)
       .useRepository(repository)
-      .saveStatesWith(statePersister)
       .reuseExistingResultsForKey(resultKey, failIfResultsMissing = false)
       .saveOrAppendResult(resultKey)
 
