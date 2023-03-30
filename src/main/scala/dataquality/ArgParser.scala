@@ -7,7 +7,7 @@ import java.net.URI
 import java.time.Instant
 
 object ArgParser {
-  def parse(args: Array[String]) = {
+  def parse(args: Array[String]): Args = {
     val parser = ArgumentParsers
       .newArgumentParser("dataquality")
 
@@ -34,7 +34,7 @@ object ArgParser {
 
     val dataSource = (rawArgs.getString("glue_database"), rawArgs.getString("glue_table"), rawArgs.getString("input_file_path")) match {
       case (null, null, null) => throw new RuntimeException("No data source specified")
-      case (null, null, path) => FilesystemDataSourceArgs(path)
+      case (null, null, path) => FilesystemDataSourceArgs(URI.create(path))
       case (database, table, null) => GlueTableDataSourceArgs(database, table)
       case _ => throw new RuntimeException("Only one data source can be specified")
     }
@@ -92,7 +92,7 @@ case class Args(
 
 sealed trait DataSourceArgs
 case class GlueTableDataSourceArgs(database: String, table: String) extends DataSourceArgs
-case class FilesystemDataSourceArgs(path: String) extends DataSourceArgs
+case class FilesystemDataSourceArgs(path: URI) extends DataSourceArgs
 
 sealed trait MetricsRepositoryArgs
 case class TimestreamMetricsRepository(database: String, table: String) extends MetricsRepositoryArgs

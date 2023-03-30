@@ -1,6 +1,5 @@
 package dataquality.respository.timestream
 
-import com.amazonaws.ClientConfiguration
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.apache.ApacheHttpClient
@@ -33,7 +32,7 @@ case class TimestreamMetricsRepositoryBuilder(
     val writeClient = TimestreamWriteClient.builder
       .httpClientBuilder(httpClientBuilder)
       .overrideConfiguration(overrideConfig)
-      .build;
+      .build
 
     val queryClient = TimestreamQueryClient.builder.build
 

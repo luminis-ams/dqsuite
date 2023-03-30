@@ -66,7 +66,7 @@ object DataQualityRunner {
         .useTable(repoArgs.database, repoArgs.table)
         .build
       )
-      val statePersister = new HdfsStateProvider(
+      val statePersister = HdfsStateProvider(
         spark,
         metricsPath.resolve("state/").toString,
         numPartitionsForHistogram = 10,
@@ -102,25 +102,24 @@ object DataQualityRunner {
           )
           .getDynamicFrame()
       case FilesystemDataSourceArgs(path) =>
-        path.startsWith("s3://") match {
-          case true =>
-            glueContext
-              .getSourceWithFormat(
-                connectionType = "s3",
-                options = JsonOptions(Map("paths" -> Seq(path))),
-                format = config.format.get,
-                formatOptions = JsonOptions(config.glueOptions.getOrElse("{}")),
-                transformationContext = "dq_source",
-              )
-              .getDynamicFrame()
-          case false =>
-            DynamicFrame(
-              spark.read
-                .options(config.sparkOptions.getOrElse(Map()))
-                .format(config.format.get)
-                .load(path),
-              glueContext,
+        if (path.getScheme == "s3") {
+          glueContext
+            .getSourceWithFormat(
+              connectionType = "s3",
+              options = JsonOptions(Map("paths" -> Seq(path.toString))),
+              format = config.format.get,
+              formatOptions = JsonOptions(config.glueOptions.getOrElse("{}")),
+              transformationContext = "dq_source",
             )
+            .getDynamicFrame()
+        } else {
+          DynamicFrame(
+            spark.read
+              .options(config.sparkOptions.getOrElse(Map()))
+              .format(config.format.get)
+              .load(path.toString),
+            glueContext,
+          )
         }
     }
   }

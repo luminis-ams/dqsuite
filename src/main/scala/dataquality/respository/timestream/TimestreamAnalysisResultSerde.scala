@@ -47,7 +47,7 @@ object TimestreamAnalysisResultSerde {
       .groupBy(metric => (metric.entity.toString, metric.instance, metric.name))
       .map({case (key, metricGroup) =>
         if (metricGroup.size > 1) {
-          log.warn(s"Multiple metrics with the same identity ${key}.")
+          log.warn(s"Multiple metrics with the same identity $key.")
         }
         metricGroup.head
       })

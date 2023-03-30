@@ -66,7 +66,7 @@ object AnomalyDetectionConfig {
     AnomalyDetectionConfig(
       c.get[String]("column"),
       CheckLevel.withName(c.getOptional[String]("level").getOrElse("Error").capitalize),
-      AnalyzerConfig.loader.load(config, ""),
+      AnalyzerConfig.loader.load(config),
       c.get[String]("strategy"),
       c.getOptional[Map[String, String]]("with_tags").getOrElse(Map.empty),
       c.getOptional[String]("description"),
@@ -120,7 +120,7 @@ object DataQualityConfig {
   def loadStream(stream: InputStream): DataQualityConfig = {
     val yamlReader = new ObjectMapper(new YAMLFactory())
     val obj = yamlReader.readValue(stream, classOf[Object])
-    val jsonWriter = new ObjectMapper();
+    val jsonWriter = new ObjectMapper()
     val json = jsonWriter.writeValueAsString(obj)
 
     val rawConfig = ConfigFactory
