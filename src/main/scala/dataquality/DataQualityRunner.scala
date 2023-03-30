@@ -61,11 +61,13 @@ object DataQualityRunner {
     }
     if (args.actions.contains(Action.VALIDATE)) {
       logger.info("Running validator")
-      val metricsRepo = FileSystemMetricsRepository(spark, metricsPath.resolve("repository/").resolve("metrics.json").toString)
-      val timestreamRepo = args.timestreamRepository.map(repoArgs => TimestreamMetricsRepositoryBuilder.builder
-        .useTable(repoArgs.database, repoArgs.table)
-        .build
-      )
+      val metricsRepo =
+        FileSystemMetricsRepository(spark, metricsPath.resolve("repository/").resolve("metrics.json").toString)
+      val timestreamRepo = args.timestreamRepository.map(
+        repoArgs =>
+          TimestreamMetricsRepositoryBuilder.builder
+            .useTable(repoArgs.database, repoArgs.table)
+            .build)
       val statePersister = HdfsStateProvider(
         spark,
         metricsPath.resolve("state/").toString,
@@ -91,7 +93,7 @@ object DataQualityRunner {
   def loadData(
     config: SourceConfig,
     args: Args,
-  ): DynamicFrame = {
+  ): DataFrame = {
     args.dataSource match {
       case GlueTableDataSourceArgs(database, table) =>
         glueContext
@@ -100,27 +102,12 @@ object DataQualityRunner {
             table,
             transformationContext = "dq_source",
           )
-          .getDynamicFrame()
+          .getDataFrame()
       case FilesystemDataSourceArgs(path) =>
-        if (path.getScheme == "s3") {
-          glueContext
-            .getSourceWithFormat(
-              connectionType = "s3",
-              options = JsonOptions(Map("paths" -> Seq(path.toString))),
-              format = config.format.get,
-              formatOptions = JsonOptions(config.glueOptions.getOrElse("{}")),
-              transformationContext = "dq_source",
-            )
-            .getDynamicFrame()
-        } else {
-          DynamicFrame(
-            spark.read
-              .options(config.sparkOptions.getOrElse(Map()))
-              .format(config.format.get)
-              .load(path.toString),
-            glueContext,
-          )
-        }
+        spark.read
+          .options(config.sparkOptions.getOrElse(Map()))
+          .format(config.format.get)
+          .load(path.toString)
     }
   }
 
@@ -160,7 +147,8 @@ object DataQualityRunner {
     }
 
     val anomalyDetectors = DeequFactory.buildAnomalyDetectors(
-      sourceConfig, Map("source" -> resultKey.tags("source"))
+      sourceConfig,
+      Map("source" -> resultKey.tags("source"))
     )
     if (anomalyDetectors.isEmpty) {
       logger.warn("No anomaly detectors found for source")
@@ -184,7 +172,9 @@ object DataQualityRunner {
 
     // Hack to get around type erasure.
     def addAnomalyCheck[S <: State[S]](instance: AnomalyDetectionInstance) = {
-      suite.addAnomalyCheck(instance.strategy, instance.analyser.asInstanceOf[Analyzer[S, Metric[Double]]], Some(instance.config))
+      suite.addAnomalyCheck(instance.strategy,
+                            instance.analyser.asInstanceOf[Analyzer[S, Metric[Double]]],
+                            Some(instance.config))
     }
 
     for (instance <- anomalyDetectors) {

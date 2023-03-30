@@ -79,7 +79,6 @@ object AnomalyDetectionConfig {
 
 case class SourceConfig(
   format: Option[String],
-  glueOptions: Option[String],
   sparkOptions: Option[Map[String, String]],
   tags: Map[String, String] = Map.empty,
   analyzers: Seq[AnalyzerConfig],
@@ -90,16 +89,9 @@ case class SourceConfig(
 object SourceConfig {
   implicit val loader: ConfigLoader[SourceConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
-    val renderOptions = ConfigRenderOptions.concise()
-
-    val glueOptions =
-      if (config.hasPath("glue_options"))
-        Some(config.getConfig("glue_options").root().render(renderOptions))
-      else None
 
     SourceConfig(
       c.getOptional[String]("format"),
-      glueOptions,
       c.getOptional[Map[String, String]]("spark_options"),
       c.getOptional[Map[String, String]]("tags").getOrElse(Map.empty),
       c.getSeq[AnalyzerConfig]("analyzers"),

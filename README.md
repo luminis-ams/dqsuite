@@ -3,7 +3,7 @@
 * [ ] Schema Checking
 * [x] Run 2022 partitions through analyzer
 * [x] Add configurable repository
-* [ ] Anomaly Detection configuration
+* [x] Anomaly Detection configuration
 * [x] Load configuration from the S3 path
 * [ ] State saving and aggregation
 * [ ] Save check results to DynamoDB and/or S3
@@ -39,10 +39,23 @@ If you use timestream as the metric repository, the following parameters are req
 ## Data Sources
 
 ### Glue Table
-
+To import data from a Glue table, the following parameters are required:
+* `glue_database`: Name of the Glue database to use.
+* `glue_table`: Name of the Glue table to use.
 
 ### Filesystem
+To import data from a file, the following parameters are required:
+* `input_file_path`: Path to the input file. Can be a local file or a S3 URI.
 
+Make sure to specify the correct file format and optionally the format options in the config:
+```yaml
+sources:
+  sales:
+    format: csv
+    spark_options:
+      inferSchema: "true"
+      header: "true"
+```
 
 ## Data Processing Patterns
 
