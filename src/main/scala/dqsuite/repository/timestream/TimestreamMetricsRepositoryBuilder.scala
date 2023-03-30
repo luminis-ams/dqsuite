@@ -1,4 +1,4 @@
-package dataquality.respository.timestream
+package dqsuite.repository.timestream
 
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy

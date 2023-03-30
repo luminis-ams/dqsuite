@@ -1,4 +1,4 @@
-package dataquality.respository.timestream
+package dqsuite.repository.timestream
 
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.repository.{MetricsRepository, MetricsRepositoryMultipleResultsLoader, ResultKey}

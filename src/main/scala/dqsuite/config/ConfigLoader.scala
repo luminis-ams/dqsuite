@@ -1,4 +1,4 @@
-package dataquality.config
+package dqsuite.config
 
 import com.typesafe.config._
 import scala.collection.JavaConverters._

@@ -1,4 +1,4 @@
-package dataquality.utils
+package dqsuite.utils
 
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.spark.sql.SparkSession

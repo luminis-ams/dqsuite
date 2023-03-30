@@ -1,7 +1,7 @@
-package dataquality
+package dqsuite
 
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
-import com.amazon.deequ.analyzers.{Analyzer, HdfsStateProvider, State, StatePersister}
+import com.amazon.deequ.analyzers.{Analyzer, State}
 import com.amazon.deequ.checks.CheckStatus
 import com.amazon.deequ.metrics.Metric
 import com.amazon.deequ.repository.fs.FileSystemMetricsRepository
@@ -11,12 +11,11 @@ import com.amazon.deequ.{VerificationResult, VerificationSuite}
 import com.amazonaws.services.glue.GlueContext
 import com.amazonaws.services.glue.log.GlueLogger
 import com.amazonaws.services.glue.util.{GlueArgParser, Job}
-import dataquality.config.{DataQualityConfig, SourceConfig}
-import dataquality.respository.timestream.TimestreamMetricsRepositoryBuilder
-import dataquality.utils.HdfsUtils
+import dqsuite.config.{DataQualityConfig, SourceConfig}
+import dqsuite.repository.timestream.TimestreamMetricsRepositoryBuilder
+import dqsuite.utils.HdfsUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.catalyst.analysis.AnalysisContext
 
 import java.net.URI
 import java.time.Instant
@@ -34,7 +33,7 @@ object DataQualityRunner {
     val glueArgs = GlueArgParser.getResolvedOptions(sysArgs, Seq("JOB_NAME").toArray)
     Job.init(glueArgs("JOB_NAME"), glueContext, glueArgs.asJava)
 
-    // Load configuation
+    // Load configuration
     val config = HdfsUtils.readFromFileOnDfs(spark, args.configPath)(DataQualityConfig.loadStream)
     val sourceConfig = config.sources.get(args.sourceName) match {
       case Some(config) => config
@@ -53,6 +52,7 @@ object DataQualityRunner {
     val resultPath = args.resultPath.resolve(s"${args.sourceName}/").resolve(s"${args.runName}/")
     val metricsPath = args.metricsPath.resolve(s"${args.sourceName}/")
 
+    // Load data
     val dyf = loadData(sourceConfig, args)
     val df = dyf.toDF()
 

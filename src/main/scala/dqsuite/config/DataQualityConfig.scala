@@ -1,10 +1,10 @@
-package dataquality.config
+package dqsuite.config
 
 import com.amazon.deequ.checks.CheckLevel
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.typesafe.config._
-import dataquality.utils.HdfsUtils
+import dqsuite.utils.HdfsUtils
 import org.apache.spark.sql.SparkSession
 
 import java.io.{BufferedReader, File, FileInputStream, InputStream}

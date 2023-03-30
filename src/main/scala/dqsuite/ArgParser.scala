@@ -1,6 +1,6 @@
-package dataquality
+package dqsuite
 
-import dataquality.Action.Action
+import dqsuite.Action.Action
 import net.sourceforge.argparse4j.ArgumentParsers
 
 import java.net.URI
@@ -9,7 +9,7 @@ import java.time.Instant
 object ArgParser {
   def parse(args: Array[String]): Args = {
     val parser = ArgumentParsers
-      .newArgumentParser("dataquality")
+      .newArgumentParser("dqsuite")
 
     parser.addArgument("--config_path").required(true)
     parser.addArgument("--source_name").required(true)

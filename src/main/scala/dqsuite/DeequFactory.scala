@@ -1,11 +1,11 @@
-package dataquality
+package dqsuite
 
 import com.amazon.deequ.AnomalyCheckConfig
 import com.amazon.deequ.analyzers.{Analyzer, State}
 import com.amazon.deequ.anomalydetection.AnomalyDetectionStrategy
 import com.amazon.deequ.checks.{Check, CheckLevel}
 import com.amazon.deequ.metrics.Metric
-import dataquality.config.{AnalyzerConfig, AnomalyDetectionConfig, CheckConfig, SourceConfig}
+import dqsuite.config.{AnalyzerConfig, AnomalyDetectionConfig, CheckConfig, SourceConfig}
 
 import java.time.Instant
 import scala.reflect.runtime.currentMirror
