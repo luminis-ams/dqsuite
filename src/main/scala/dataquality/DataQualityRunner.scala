@@ -1,5 +1,6 @@
 package dataquality
 
+import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.analyzers.{Analyzer, HdfsStateProvider, State, StatePersister}
 import com.amazon.deequ.checks.CheckStatus
 import com.amazon.deequ.metrics.Metric
@@ -15,6 +16,7 @@ import dataquality.respository.timestream.TimestreamMetricsRepositoryBuilder
 import dataquality.utils.HdfsUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.catalyst.analysis.AnalysisContext
 
 import java.net.URI
 import java.time.Instant
@@ -69,14 +71,14 @@ object DataQualityRunner {
             .useTable(repoArgs.database, repoArgs.table)
             .build)
 
-      val result = runValidator(df, resultKey, resultPath, metricsRepo, sourceConfig)
+      val empheralRepos = timestreamRepo.toSeq
+
+      val result = runValidator(df, resultKey, resultPath, metricsRepo, empheralRepos, sourceConfig)
       result.map(r => r.status) match {
         case Some(CheckStatus.Success) => logger.info("Validation succeeded")
         case Some(CheckStatus.Warning) => logger.warn("Validation succeeded with warnings")
         case Some(CheckStatus.Error)   => throw new RuntimeException("Validation failed")
       }
-
-//      statePersister.
     }
 
     Job.commit()
@@ -123,6 +125,7 @@ object DataQualityRunner {
     resultKey: ResultKey,
     resultPath: URI,
     repository: MetricsRepository,
+    ephemeralRepositories: Seq[MetricsRepository],
     sourceConfig: SourceConfig,
   ): Option[VerificationResult] = {
     logger.info("Running validator")
@@ -173,6 +176,11 @@ object DataQualityRunner {
     }
 
     val result = suite.run()
+
+    logger.info("Saving metrics to ephemeral repositories")
+    for (repo <- ephemeralRepositories) {
+      repo.save(resultKey, AnalyzerContext(result.metrics))
+    }
 
     Some(result)
   }
