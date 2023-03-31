@@ -1,0 +1,59 @@
+sources:
+  sales:
+    analyzers:
+      - column: "Dataset"
+        expression: Size()
+      - column: "Invoice/Item Number"
+        expression: Completeness(@)::Uniqueness(@)
+      - column: "Date"
+        expression: Completeness(@)::PatternMatch(@, "^[0-9]{4}-[0-9]{2}-[0-9]{2}$".r)
+      - column: "Store Name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "Address"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "City"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "Zip Code"
+        expression: Completeness(@)::PatternMatch(@, "^[0-9]{5}$".r)
+      - column: "County"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "Category Name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "Vendor Name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "Item Number"
+        expression: Completeness(@)::ApproxCountDistinct(@)::Distinctness(@)
+      - column: "Item Description"
+        expression: Completeness(@)
+      - column: "Bottle Volume (ml)"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "State Bottle Cost"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "Bottles Sold"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "Sale"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "Volume Sold (Liters)"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+    checks:
+      - column: "Dataset"
+        level: error
+        name: "Dataset must not be empty"
+        expression: .hasSize(n => n > 0, Some("Dataset must not be empty"))
+      - column: "Date"
+        level: warning
+        name: "Date validation"
+        expression: >
+          .hasPattern(@, "^[0-9]{4}-[0-9]{2}-[0-9]{2}$".r)
+          .isComplete(@)
+      - column: "Item Number"
+        expression: .isComplete(@)
+      - column: "Bottles Sold"
+        expression: .hasDataType(@, ConstrainableDataTypes.Integral)
+    anomaly_detection:
+      - column: "Dataset"
+        level: error
+        description: "Dataset size must not be anomalous"
+        expression: Size()
+        strategy: OnlineNormalStrategy(lowerDeviationFactor = Some(3.0), upperDeviationFactor = Some(3.0))
+        window: 604800

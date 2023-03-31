@@ -15,22 +15,17 @@ object BasicExample {
   private val logger = new GlueLogger()
 
   def main(sysArgs: Array[String]): Unit = {
-    val args = GlueArgParser.getResolvedOptions(
-      sysArgs,
-      Seq(
-        "JOB_NAME",
-        "input_file_path",
-        "config_path",
-      ).toArray
-    )
+    // * config_path: Path to the data quality configuration file. Can be a local file or a S3 URI.
+    // * input_file_path: Path to the input file. Can be a local file or a S3 URI.
+    val args = GlueArgParser.getResolvedOptions(sysArgs, Seq("JOB_NAME",  "input_file_path", "config_path").toArray)
     Job.init(args("JOB_NAME"), glueContext, args.asJava)
 
     // Configure DQSuite
     val dqsContext = DQSuiteContextBuilder
       .builder
       .withConfigPath(args("config_path"))
-      .withResultPath("./data/out/results")
-      .withMetricsPath("./data/out/metrics")
+      .withResultPath("./out/results")
+      .withMetricsPath("./out/metrics")
       .withSparkSession(spark)
       .build
 
