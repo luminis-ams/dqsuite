@@ -8,7 +8,7 @@ import software.amazon.awssdk.services.timestreamwrite.TimestreamWriteClient
 
 import java.time.Duration
 
-case class TimestreamMetricsRepositoryBuilder(
+private[dqsuite] case class TimestreamMetricsRepositoryBuilder(
   databaseName: Option[String] = None,
   tableName: Option[String] = None,
 ) {

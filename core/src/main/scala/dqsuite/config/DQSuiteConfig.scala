@@ -4,15 +4,12 @@ import com.amazon.deequ.checks.CheckLevel
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.typesafe.config._
-import dqsuite.utils.HdfsUtils
-import org.apache.spark.sql.SparkSession
 
-import java.io.{BufferedReader, File, FileInputStream, InputStream}
-import java.time.Instant
+import java.io.InputStream
 
-case class AnalyzerConfig(column: String, expression: String, where: Option[String], enabled: Boolean)
+private[dqsuite] case class AnalyzerConfig(column: String, expression: String, where: Option[String], enabled: Boolean)
 
-object AnalyzerConfig {
+private[dqsuite] object AnalyzerConfig {
   implicit val loader: ConfigLoader[AnalyzerConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
 
@@ -25,7 +22,7 @@ object AnalyzerConfig {
   }
 }
 
-case class CheckConfig(
+private[dqsuite] case class CheckConfig(
   column: String,
   level: CheckLevel.Value,
   name: Option[String],
@@ -33,7 +30,7 @@ case class CheckConfig(
   enabled: Boolean
 )
 
-object CheckConfig {
+private[dqsuite] object CheckConfig {
   implicit val loader: ConfigLoader[CheckConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
 
@@ -47,7 +44,7 @@ object CheckConfig {
   }
 }
 
-case class AnomalyDetectionConfig(
+private[dqsuite] case class AnomalyDetectionConfig(
   column: String,
   level: CheckLevel.Value,
   analyser: AnalyzerConfig,
@@ -58,7 +55,7 @@ case class AnomalyDetectionConfig(
   enabled: Boolean,
 )
 
-object AnomalyDetectionConfig {
+private[dqsuite] object AnomalyDetectionConfig {
   implicit val loader: ConfigLoader[AnomalyDetectionConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
 
@@ -75,22 +72,18 @@ object AnomalyDetectionConfig {
   }
 }
 
-case class SourceConfig(
-  format: Option[String],
-  sparkOptions: Option[Map[String, String]],
+private[dqsuite] case class SourceConfig(
   tags: Map[String, String] = Map.empty,
   analyzers: Seq[AnalyzerConfig],
   checks: Seq[CheckConfig],
   anomalyDetection: Seq[AnomalyDetectionConfig]
 )
 
-object SourceConfig {
+private[dqsuite] object SourceConfig {
   implicit val loader: ConfigLoader[SourceConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
 
     SourceConfig(
-      c.getOptional[String]("format"),
-      c.getOptional[Map[String, String]]("spark_options"),
       c.getOptional[Map[String, String]]("tags").getOrElse(Map.empty),
       c.getSeq[AnalyzerConfig]("analyzers"),
       c.getSeq[CheckConfig]("checks"),
@@ -99,15 +92,15 @@ object SourceConfig {
   }
 }
 
-case class DataQualityConfig(sources: Map[String, SourceConfig])
+private[dqsuite] case class DQSuiteConfig(sources: Map[String, SourceConfig])
 
-object DataQualityConfig {
-  implicit val loader: ConfigLoader[DataQualityConfig] = (config: Config, path: String) =>
-    DataQualityConfig(
+private[dqsuite] object DQSuiteConfig {
+  implicit val loader: ConfigLoader[DQSuiteConfig] = (config: Config, path: String) =>
+    DQSuiteConfig(
       Configuration(config).getMap[SourceConfig]("sources")
   )
 
-  def loadStream(stream: InputStream): DataQualityConfig = {
+  def loadStream(stream: InputStream): DQSuiteConfig = {
     val yamlReader = new ObjectMapper(new YAMLFactory())
     val obj = yamlReader.readValue(stream, classOf[Object])
     val jsonWriter = new ObjectMapper()
@@ -117,7 +110,7 @@ object DataQualityConfig {
       .parseString(json)
       .resolve()
 
-    val config: DataQualityConfig = Configuration(rawConfig).get("")
+    val config: DQSuiteConfig = Configuration(rawConfig).get("")
     config
   }
 }

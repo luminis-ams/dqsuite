@@ -5,7 +5,7 @@ import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 
 
-trait ConfigLoader[A] {
+private[dqsuite] trait ConfigLoader[A] {
   self =>
   def load(config: Config, path: String = ""): A
 
@@ -58,7 +58,7 @@ object ConfigLoader {
     }
 }
 
-case class Configuration(underlying: Config) {
+private[dqsuite] case class Configuration(underlying: Config) {
   /**
    * Get the config at the given path.
    */

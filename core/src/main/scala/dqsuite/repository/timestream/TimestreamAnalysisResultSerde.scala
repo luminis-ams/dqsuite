@@ -3,16 +3,14 @@ package dqsuite.repository.timestream
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.metrics.{DoubleMetric, Metric}
 import com.amazon.deequ.repository.ResultKey
-import com.amazonaws.services.glue.log.GlueLogger
-import com.amazonaws.services.timestreamwrite.model.MeasureValueType
-import software.amazon.awssdk.services.timestreamwrite.model.{Dimension, Record, TimeUnit}
+import org.apache.logging.log4j.LogManager
+import software.amazon.awssdk.services.timestreamwrite.model.{Dimension, MeasureValueType, Record, TimeUnit}
 
 import scala.jdk.CollectionConverters.seqAsJavaListConverter
-import scala.tools.nsc.util.HashSet
 import scala.util.Success
 
-object TimestreamAnalysisResultSerde {
-  val log = new GlueLogger()
+private[dqsuite] object TimestreamAnalysisResultSerde {
+  val logger = LogManager.getLogger()
 
 //  val DATASET_DATE_FIELD = "dataSetDate"
   val TAGS_PREFIX_FIELD = "tags_"
@@ -45,11 +43,12 @@ object TimestreamAnalysisResultSerde {
 
     val records = analyzerContext.allMetrics
       .groupBy(metric => (metric.entity.toString, metric.instance, metric.name))
-      .map({case (key, metricGroup) =>
-        if (metricGroup.size > 1) {
-          log.warn(s"Multiple metrics with the same identity $key.")
-        }
-        metricGroup.head
+      .map({
+        case (key, metricGroup) =>
+          if (metricGroup.size > 1) {
+            logger.warn(s"Multiple metrics with the same identity $key.")
+          }
+          metricGroup.head
       })
       .flatMap(metricToRecord)
       .toSeq
@@ -85,12 +84,12 @@ object TimestreamAnalysisResultSerde {
           value match {
             case Success(v) => v.toString
             case _ =>
-              log.warn(s"Metric ${metric.name} has a NaN value")
+              logger.warn(s"Metric ${metric.name} has a NaN value")
               return None
           }
         )
       case _ => {
-        log.warn(s"Unsupported metric type ${metric.getClass} for ${metric.name}")
+        logger.warn(s"Unsupported metric type ${metric.getClass} for ${metric.name}")
         return None
       }
     }

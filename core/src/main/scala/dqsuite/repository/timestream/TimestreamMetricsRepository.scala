@@ -2,20 +2,20 @@ package dqsuite.repository.timestream
 
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.repository.{MetricsRepository, MetricsRepositoryMultipleResultsLoader, ResultKey}
-import com.amazonaws.services.glue.log.GlueLogger
+import org.apache.logging.log4j.LogManager
 import software.amazon.awssdk.services.timestreamquery.TimestreamQueryClient
 import software.amazon.awssdk.services.timestreamwrite.TimestreamWriteClient
 import software.amazon.awssdk.services.timestreamwrite.model.{RejectedRecordsException, WriteRecordsRequest}
 
 import scala.jdk.CollectionConverters.seqAsJavaListConverter
 
-class TimestreamMetricsRepository(
+private[dqsuite] class TimestreamMetricsRepository(
   timestreamWriteClient: TimestreamWriteClient,
   timestreamQueryClient: TimestreamQueryClient,
   databaseName: String,
   tableName: String,
 ) extends MetricsRepository {
-  val log = new GlueLogger()
+  val logger = LogManager.getLogger()
 
   override def save(resultKey: ResultKey, analyzerContext: AnalyzerContext): Unit = {
     val (commonAttributes, records) = TimestreamAnalysisResultSerde.analysisResultToTimescaleRecords(resultKey, analyzerContext)
@@ -30,16 +30,16 @@ class TimestreamMetricsRepository(
 
     try {
       val writeRecordsResponse = timestreamWriteClient.writeRecords(writeRecordsStatement)
-      log.info(s"WriteRecords Status: ${writeRecordsResponse.sdkHttpResponse().statusCode()}")
+      logger.info(s"WriteRecords Status: ${writeRecordsResponse.sdkHttpResponse().statusCode()}")
     } catch {
       case e: RejectedRecordsException => {
-        log.error(s"RejectedRecordsException: ${e.getMessage}")
+        logger.error(s"RejectedRecordsException: ${e.getMessage}")
         e.rejectedRecords().forEach(record => {
-          log.error(s"RejectedRecord: ${record.toString}")
+          logger.error(s"RejectedRecord: ${record.toString}")
         })
       }
       case e: Exception => {
-        log.error(s"Exception: ${e.getMessage}")
+        logger.error(s"Exception: ${e.getMessage}")
       }
     }
   }

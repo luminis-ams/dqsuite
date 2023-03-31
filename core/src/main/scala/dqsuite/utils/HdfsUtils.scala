@@ -3,8 +3,7 @@ package dqsuite.utils
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.spark.sql.SparkSession
 
-
-object HdfsUtils {
+private[dqsuite] object HdfsUtils {
   /* Make sure we write to the correct filesystem, as EMR clusters also have an internal HDFS */
   def asQualifiedPath(session: SparkSession, path: String): (FileSystem, Path) = {
     val hdfsPath = new Path(path)
@@ -15,8 +14,7 @@ object HdfsUtils {
   }
 
   /* Helper function to read from a binary file on S3 */
-  def readFromFileOnDfs[T](session: SparkSession, path: String)
-                          (readFunc: FSDataInputStream => T): T = {
+  def readFromFileOnDfs[T](session: SparkSession, path: String)(readFunc: FSDataInputStream => T): T = {
 
     val (fs, qualifiedPath) = asQualifiedPath(session, path)
     val input = fs.open(qualifiedPath)
