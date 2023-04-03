@@ -27,7 +27,7 @@ object DeequFactory {
     |$expression :: Nil
     |""".stripMargin
 
-    val analyzers = toolbox.eval(toolbox.parse(source)).asInstanceOf[Seq[Analyzer[_, Metric[_]]]]
+    val analyzers = evaluate(source).asInstanceOf[Seq[Analyzer[_, Metric[_]]]]
     analyzers
   }
 
@@ -53,7 +53,7 @@ object DeequFactory {
     |$expression
     """.stripMargin
 
-    val check = toolbox.eval(toolbox.parse(source)).asInstanceOf[Check]
+    val check = evaluate(source).asInstanceOf[Check]
     Some(check)
   }
 
@@ -77,7 +77,7 @@ object DeequFactory {
     |import com.amazon.deequ.anomalydetection._
     |$expression
     """.stripMargin
-    val strategy = toolbox.eval(toolbox.parse(source)).asInstanceOf[AnomalyDetectionStrategy]
+    val strategy = evaluate(source).asInstanceOf[AnomalyDetectionStrategy]
 
     val analyser = buildAnalyzer(config.analyser).head.asInstanceOf[Analyzer[_ <: State[_], Metric[Double]]]
 
@@ -104,6 +104,10 @@ object DeequFactory {
     withTags: Map[String, String] = Map.empty,
   ): Seq[AnomalyDetectionInstance] = {
     config.anomalyDetection.flatMap(DeequFactory.buildAnomalyDetector(datasetDate, _, config.tags ++ withTags))
+  }
+
+  private def evaluate(source: String): Any = {
+    toolbox.eval(toolbox.parse(source))
   }
 }
 

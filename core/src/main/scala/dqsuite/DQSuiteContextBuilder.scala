@@ -37,13 +37,15 @@ case class DQSuiteContextBuilder(
 
   def withSparkSession(spark: SparkSession): DQSuiteContextBuilder = copy(spark = Some(spark))
 
-  def build: DQSuiteContext = new DQSuiteContext(
-    HdfsUtils.readFromFileOnDfs(spark.get, configPath.get.toString)(DQSuiteConfig.loadStream),
-    metricsPath.get,
-    resultPath.get,
-    timestreamRepository.toSeq,
-    spark.get
-  )
+  def build: DQSuiteContext = {
+    DQSuiteContext(
+      HdfsUtils.readFromFileOnDfs(spark.get, configPath.get.toString)(DQSuiteConfig.loadStream),
+      metricsPath.get,
+      resultPath.get,
+      timestreamRepository.toSeq,
+      spark.get,
+    )
+  }
 }
 
 object DQSuiteContextBuilder {

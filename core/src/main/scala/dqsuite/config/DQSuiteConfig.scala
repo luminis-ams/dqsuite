@@ -2,8 +2,8 @@ package dqsuite.config
 
 import com.amazon.deequ.checks.CheckLevel
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.typesafe.config._
+import org.yaml.snakeyaml.Yaml
 
 import java.io.InputStream
 
@@ -101,8 +101,8 @@ private[dqsuite] object DQSuiteConfig {
   )
 
   def loadStream(stream: InputStream): DQSuiteConfig = {
-    val yamlReader = new ObjectMapper(new YAMLFactory())
-    val obj = yamlReader.readValue(stream, classOf[Object])
+    val yaml = new Yaml()
+    val obj: Object = yaml.load(stream)
     val jsonWriter = new ObjectMapper()
     val json = jsonWriter.writeValueAsString(obj)
 
