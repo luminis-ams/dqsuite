@@ -2,7 +2,7 @@ package dqsuite
 
 import dqsuite.config.DQSuiteConfig
 import dqsuite.repository.timestream.{TimestreamMetricsRepository, TimestreamMetricsRepositoryBuilder}
-import dqsuite.utils.HdfsUtils
+import dqsuite.utils.{HdfsUtils, PathUtils}
 import org.apache.spark.sql.SparkSession
 
 import java.net.URI
@@ -16,15 +16,18 @@ case class DQSuiteContextBuilder(
 ) {
   def withConfigPath(configPath: URI): DQSuiteContextBuilder = copy(configPath = Some(configPath))
 
-  def withConfigPath(configPath: String): DQSuiteContextBuilder = copy(configPath = Some(URI.create(configPath)))
+  def withConfigPath(configPath: String): DQSuiteContextBuilder =
+    copy(configPath = Some(URI.create(PathUtils.ensureTrailingSlash(configPath))))
 
   def withMetricsPath(metricsPath: URI): DQSuiteContextBuilder = copy(metricsPath = Some(metricsPath))
 
-  def withMetricsPath(metricsPath: String): DQSuiteContextBuilder = copy(metricsPath = Some(URI.create(metricsPath)))
+  def withMetricsPath(metricsPath: String): DQSuiteContextBuilder =
+    copy(metricsPath = Some(URI.create(PathUtils.ensureTrailingSlash(metricsPath))))
 
   def withResultPath(resultPath: URI): DQSuiteContextBuilder = copy(resultPath = Some(resultPath))
 
-  def withResultPath(resultPath: String): DQSuiteContextBuilder = copy(resultPath = Some(URI.create(resultPath)))
+  def withResultPath(resultPath: String): DQSuiteContextBuilder =
+    copy(resultPath = Some(URI.create(PathUtils.ensureTrailingSlash(resultPath))))
 
   def withTimestreamRepository(database: String, table: String): DQSuiteContextBuilder =
     copy(
