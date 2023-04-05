@@ -133,6 +133,82 @@ sources:
   * **Window**: Window (in seconds) to use for historical metric gathering. (default: infinite)
   * **Enabled**: Whether to run the check or not. (default: true)
 
+## Usage
+
+### Scala
+
+Create the context by providing additional parameters such as result paths and repository confgiuration:
+```scala
+// Configure DQSuite
+val dqsContext = DQSuiteContextBuilder
+  .builder
+  .withConfigPath(args("config_path"))
+  .withResultPath("./out/results")
+  .withMetricsPath("./out/metrics")
+  .withSparkSession(spark)
+  .build
+```
+
+Select the source / source configuration you will be using for profiling:
+```scala
+val dsContext = dqsContext.withDataset("sales")
+```
+
+Data profiling computes metrics on your data inferred using some basic rules and data schema. 
+It emits these profiling results as well as some suggestions on checks you may want to configure.
+```scala
+val profilingResult = dsContext.profile(df)
+logger.info(s"Profiling finished. Used ${profilingResult.numRecordsUsedForProfiling} for profiling")
+```
+
+Validation runs configured metrics, checks and anomaly detection against your data. Run it using: 
+```scala
+val validationResult = dsContext.validate(df)
+validationResult.status match {
+  case CheckStatus.Success => logger.info("Validation succeeded")
+  case CheckStatus.Warning => logger.warn("Validation succeeded with warnings")
+  case CheckStatus.Error => throw new RuntimeException("Validation failed")
+}
+```
+
+
+### Python
+
+Create the context by providing additional parameters such as result paths and repository confgiuration:
+```python
+# Configure DQSuite
+dqsContext = (
+    DQSuiteContextBuilder.builder(spark)
+        .withConfigPath(config_path)
+        .withResultPath("./out/results")
+        .withMetricsPath("./out/metrics")
+        .build()
+)
+```
+
+Select the source / source configuration you will be using for profiling:
+```python
+dsContext = dqsContext.withDataset("sales")
+```
+
+Data profiling computes metrics on your data inferred using some basic rules and data schema.
+It emits these profiling results as well as some suggestions on checks you may want to configure.
+```python
+profilingResult = dsContext.profile(df)
+print(f"Profiling finished. Used {profilingResult.numRecordsUsedForProfiling} for profiling")
+```
+
+Validation runs configured metrics, checks and anomaly detection against your data. Run it using:
+```python
+validationResult = dsContext.validate(df)
+if validationResult.status == "Error":
+    raise Exception("Validation failed")
+elif validationResult.status == "Warning":
+    print("Validation succeeded with warnings")
+else:
+    print("Validation succeeded")
+```
+
 ## Deployment
 
 ### Glue Scala ETL Script
