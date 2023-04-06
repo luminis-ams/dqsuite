@@ -34,7 +34,9 @@ private[dqsuite] case class TimestreamMetricsRepositoryBuilder(
       .overrideConfiguration(overrideConfig)
       .build
 
-    val queryClient = TimestreamQueryClient.builder.build
+    val queryClient = TimestreamQueryClient.builder
+      .httpClientBuilder(httpClientBuilder)
+      .build
 
     new TimestreamMetricsRepository(
       writeClient,
