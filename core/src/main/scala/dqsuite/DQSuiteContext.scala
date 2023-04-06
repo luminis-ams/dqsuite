@@ -29,7 +29,7 @@ case class DQSuiteContext(
       case None         => throw new RuntimeException(s"No config found for source: '$name'")
     }
 
-    val runNameOuter = runName.getOrElse(s"${Instant.now().toString.replace(":", "-")}")
+    val runNameOuter = runName.getOrElse(s"${Instant.now().toString}")
 
     // Create result key (for storing metrics).
     val resultKey = ResultKey(
@@ -40,7 +40,7 @@ case class DQSuiteContext(
       ) ++ partition.map("partition" -> _) ++ sourceConfig.tags
     )
 
-    val resultPath = this.resultPath.resolve(s"$name/").resolve(s"$runNameOuter/")
+    val resultPath = this.resultPath.resolve(s"$name/").resolve(s"./$runNameOuter/")
     val metricsPath = this.metricsPath.resolve(s"$name/")
     val repositoryPath = metricsPath.resolve("repository/").resolve("metrics.json")
 
