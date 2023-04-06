@@ -43,6 +43,7 @@ case class DQSuiteDatasetContext(
 
   def validate(
     df: DataFrame,
+    anomalyDetection: Boolean = true,
   ): VerificationResult = {
     logger.info("Running validator")
 
@@ -93,8 +94,11 @@ case class DQSuiteDatasetContext(
                             Some(instance.config))
     }
 
-    for (instance <- anomalyDetectors) {
-      suite = addAnomalyCheck(instance)
+    // Do a check so runs where there is no data yet are not anomalous.
+    if (anomalyDetectors.nonEmpty && anomalyDetection) {
+      for (instance <- anomalyDetectors) {
+        suite = addAnomalyCheck(instance)
+      }
     }
     val result = suite.run()
 

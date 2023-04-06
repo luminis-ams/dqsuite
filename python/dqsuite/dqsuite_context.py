@@ -72,5 +72,5 @@ class DQSuiteDatasetContext(PY4JClassWrapper):
     def profile(self, df) -> Any:
         return self._callj("profile", df._jdf)
 
-    def validate(self, df) -> Any:
-        return VerificationResult(self._spark_session, self._callj("validate", df._jdf))
+    def validate(self, df, anomalyDetection: bool = True) -> Any:
+        return VerificationResult(self._spark_session, self._callj("validate", df._jdf, anomalyDetection))
