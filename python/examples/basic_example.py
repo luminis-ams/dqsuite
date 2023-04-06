@@ -24,7 +24,14 @@ df = (
 )
 
 profilingResult = dsContext.profile(df)
-print(f"Profiling finished. Used {profilingResult.numRecordsUsedForProfiling} for profiling")
+print(f"Profiling finished. Used {profilingResult.numRecordsUsedForProfiling()} for profiling")
 
 validationResult = dsContext.validate(df)
 print(validationResult.status)
+if validationResult.status == "Error":
+    raise Exception("Validation failed")
+elif validationResult.status == "Warning":
+    print("Validation succeeded with warnings")
+else:
+    print("Validation succeeded")
+print(validationResult.checkResults)
