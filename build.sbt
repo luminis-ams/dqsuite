@@ -4,7 +4,7 @@ addCommandAlias(
 )
 lazy val copyJarsTask = taskKey[Unit]("Copy required jars to the lib folder")
 
-val projectName = "dataquality-suite"
+val projectName = "dqsuite"
 val glueVersion = "4.0.0"
 val sparkVersion = "3.3.0"
 val scalaCompatVersion = "2.12"
