@@ -4,7 +4,7 @@ sources:
       - column: "Invoice/Item Number"
         type: string
         is_nullable: false
-      - column: "Date"
+      - column: "date"
         type: timestamp
         mask: "yyyy-MM-dd"
         is_nullable: false

@@ -3,10 +3,15 @@ package dqsuite.config
 import com.amazon.deequ.schema.RowLevelSchema
 import com.typesafe.config.Config
 
-private[dqsuite] sealed trait SchemaColumnDefinitionConfig
+private[dqsuite] sealed trait SchemaColumnDefinitionConfig {
+  def column: String
+
+  def required: Boolean
+}
 
 private[dqsuite] case class SchemaExprConfig(
   column: String,
+  required: Boolean,
   expression: String,
 ) extends SchemaColumnDefinitionConfig
 
@@ -16,17 +21,19 @@ private[dqsuite] object SchemaExprConfig {
 
     SchemaExprConfig(
       c.get[String]("column"),
-      c.get[String]("expression")
+      c.getOptional[Boolean]("required").getOrElse(true),
+      c.get[String]("expression"),
     )
   }
 }
 
 private[dqsuite] case class StringColumnConfig(
   column: String,
+  required: Boolean,
   isNullable: Boolean = true,
   minLength: Option[Int] = None,
   maxLength: Option[Int] = None,
-  matches: Option[String] = None
+  matches: Option[String] = None,
 ) extends SchemaColumnDefinitionConfig
 
 private[dqsuite] object StringColumnConfig {
@@ -35,6 +42,7 @@ private[dqsuite] object StringColumnConfig {
 
     StringColumnConfig(
       c.get[String]("column"),
+      c.getOptional[Boolean]("required").getOrElse(true),
       c.getOptional[Boolean]("is_nullable").getOrElse(true),
       c.getOptional[Int]("min_length"),
       c.getOptional[Int]("max_length"),
@@ -45,6 +53,7 @@ private[dqsuite] object StringColumnConfig {
 
 private[dqsuite] case class IntColumnConfig(
   column: String,
+  required: Boolean,
   isNullable: Boolean = true,
   minValue: Option[Int] = None,
   maxValue: Option[Int] = None
@@ -56,6 +65,7 @@ private[dqsuite] object IntColumnConfig {
 
     IntColumnConfig(
       c.get[String]("column"),
+      c.getOptional[Boolean]("required").getOrElse(true),
       c.getOptional[Boolean]("is_nullable").getOrElse(true),
       c.getOptional[Int]("min_value"),
       c.getOptional[Int]("max_value")
@@ -65,6 +75,7 @@ private[dqsuite] object IntColumnConfig {
 
 private[dqsuite] case class DecimalColumnConfig(
   column: String,
+  required: Boolean,
   precision: Int,
   scale: Int,
   isNullable: Boolean = true,
@@ -76,6 +87,7 @@ private[dqsuite] object DecimalColumnConfig {
 
     DecimalColumnConfig(
       c.get[String]("column"),
+      c.getOptional[Boolean]("required").getOrElse(true),
       c.get[Int]("precision"),
       c.get[Int]("scale"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true)
@@ -85,6 +97,7 @@ private[dqsuite] object DecimalColumnConfig {
 
 private[dqsuite] case class TimestampColumnConfig(
   column: String,
+  required: Boolean,
   mask: String,
   isNullable: Boolean = true
 ) extends SchemaColumnDefinitionConfig
@@ -95,6 +108,7 @@ private[dqsuite] object TimestampColumnConfig {
 
     TimestampColumnConfig(
       c.get[String]("column"),
+      c.getOptional[Boolean]("required").getOrElse(true),
       c.get[String]("mask"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true)
     )

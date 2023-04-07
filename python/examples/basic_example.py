@@ -26,7 +26,7 @@ df_raw = (
 schemaCheckResult = dsContext.checkSchema(df_raw)
 print(f"Schema check finished. Found {schemaCheckResult.numInvalidRows} invalid rows" +
       f" and {schemaCheckResult.numValidRows} valid rows")
-assert int(schemaCheckResult.numInvalidRows) == 0, "Schema check failed"
+assert schemaCheckResult.isValid, "Schema check failed"
 df = schemaCheckResult.validRows
 
 profilingResult = dsContext.profile(df)

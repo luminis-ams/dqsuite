@@ -42,7 +42,11 @@ object BasicExample {
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
         s" and ${schemaCheckResult.numValidRows} valid rows")
-    assert(schemaCheckResult.numInvalidRows == 0)
+    if (schemaCheckResult.missingColumns.nonEmpty) {
+      logger.warn(s"Missing columns: ${schemaCheckResult.missingColumns.mkString(", ")}")
+    }
+
+    assert(schemaCheckResult.isValid)
 
     // Use valid rows
     val df = schemaCheckResult.validRows

@@ -1,10 +1,9 @@
 package dqsuite
 import com.amazon.deequ.VerificationResult
 import com.amazon.deequ.repository.{MetricsRepository, ResultKey}
-import com.amazon.deequ.schema.RowLevelSchemaValidationResult
 import com.amazon.deequ.suggestions.ConstraintSuggestionResult
 import dqsuite.config.SourceConfig
-import dqsuite.runners.{ProfilingRunner, SchemaCheckRunner, ValidationRunner}
+import dqsuite.runners.{ProfilingRunner, SchemaCheckResult, SchemaCheckRunner, ValidationRunner}
 import org.apache.spark.sql.DataFrame
 
 import java.net.URI
@@ -25,7 +24,7 @@ case class DQSuiteDatasetContext(
 
   def checkSchema(
     df: DataFrame,
-  ): RowLevelSchemaValidationResult = {
+  ): SchemaCheckResult = {
     SchemaCheckRunner(this).run(df)
   }
 

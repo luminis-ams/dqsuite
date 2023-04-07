@@ -1,9 +1,19 @@
+from typing import List
+
 from pyspark.sql import DataFrame, SQLContext
 
 from dqsuite.utils import PY4JClassWrapper
 
 
-class SchemaValidationResult(PY4JClassWrapper):
+class SchemaCheckResult(PY4JClassWrapper):
+    @property
+    def missingColumns(self) -> List[str]:
+        return self._instance.missingColumns()
+
+    @property
+    def extraColumns(self) -> List[str]:
+        return self._instance.extraColumns()
+
     @property
     def numValidRows(self) -> int:
         return int(self._instance.numValidRows())
@@ -11,6 +21,10 @@ class SchemaValidationResult(PY4JClassWrapper):
     @property
     def numInvalidRows(self) -> int:
         return int(self._instance.numInvalidRows())
+
+    @property
+    def isValid(self) -> bool:
+        return bool(self._instance.isValid())
 
     @property
     def validRows(self) -> DataFrame:
