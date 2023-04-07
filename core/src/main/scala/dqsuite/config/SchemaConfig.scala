@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 private[dqsuite] sealed trait SchemaColumnDefinitionConfig
 
 private[dqsuite] case class SchemaExprConfig(
+  column: String,
   expression: String,
 ) extends SchemaColumnDefinitionConfig
 
@@ -14,6 +15,7 @@ private[dqsuite] object SchemaExprConfig {
     val c = Configuration(config)
 
     SchemaExprConfig(
+      c.get[String]("column"),
       c.get[String]("expression")
     )
   }

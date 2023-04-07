@@ -47,7 +47,7 @@ case class DQSuiteContext(
     val repository = FileSystemMetricsRepository(spark, repositoryPath.toString)
 
     DQSuiteDatasetContext(
-      context = this,
+      suiteContext = this,
       config = sourceConfig,
       metricsPath = metricsPath,
       resultPath = resultPath,

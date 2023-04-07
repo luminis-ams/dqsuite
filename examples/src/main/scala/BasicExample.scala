@@ -42,6 +42,7 @@ object BasicExample {
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
         s" and ${schemaCheckResult.numValidRows} valid rows")
+    assert(schemaCheckResult.numInvalidRows == 0)
 
     // Use valid rows
     val df = schemaCheckResult.validRows
