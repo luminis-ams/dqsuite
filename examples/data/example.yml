@@ -16,6 +16,7 @@ sources:
         type: string
       - column: "Zip Code"
         type: string
+        alias: zip_code
       - column: "County"
         type: string
       - column: "Category Name"

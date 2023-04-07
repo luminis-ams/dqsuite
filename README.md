@@ -129,6 +129,7 @@ Schema is used to check input data against the expected schema.
 * **required**: Whether the column is required or not. (default: true)
 * **is_nullable**: Whether the column can be null or not. (default: true)
 * **type**: Type of the column. (string, integer, decimal, timestamp, expression)
+* **alias**: Used in `postprocess` to rename the column. Not used during schema check.
 * For string columns:
     * **min_length** (optional): Minimum length of the string column. (default: 0)
     * **max_length** (optional): Maximum length of the string column. (default: Infty)
@@ -229,6 +230,13 @@ validationResult.status match {
 }
 ```
 
+Finally, you can apply postprocessing for quick data transformation. Following transformations are supported:
+* Column renaming: (if `alias` is specified in schema config)
+
+```scala
+val dfPostProcessed = dsContext.postprocess(df)
+```
+
 ### Python
 
 Create the context by providing additional parameters such as result paths and repository confgiuration:
@@ -275,6 +283,13 @@ elif validationResult.status == "Warning":
     print("Validation succeeded with warnings")
 else:
     print("Validation succeeded")
+```
+
+Finally, you can apply postprocessing for quick data transformation. Following transformations are supported:
+* Column renaming: (if `alias` is specified in schema config)
+
+```python
+dfPostProcessed = dsContext.postprocess(df)
 ```
 
 ## Deployment

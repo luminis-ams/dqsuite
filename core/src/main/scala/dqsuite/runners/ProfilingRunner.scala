@@ -4,7 +4,7 @@ import com.amazon.deequ.suggestions.{ConstraintSuggestionResult, ConstraintSugge
 import dqsuite.DQSuiteDatasetContext
 import org.apache.spark.sql.DataFrame
 
-case class ProfilingRunner(
+private[dqsuite] case class ProfilingRunner(
   context: DQSuiteDatasetContext,
 ) {
   def run(

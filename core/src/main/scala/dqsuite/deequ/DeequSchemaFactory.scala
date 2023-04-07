@@ -26,7 +26,6 @@ private[dqsuite] object DeequSchemaFactory {
           .withTimestampColumn(col.column, col.mask, col.isNullable)
       }
       case col: SchemaExprConfig => {
-
         val expression = col.expression.replace("@", s""""${col.column}"""")
         val source =
           s"""

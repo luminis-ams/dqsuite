@@ -3,10 +3,9 @@ package dqsuite.runners
 import com.amazon.deequ.schema.{RowLevelSchemaValidationResult, RowLevelSchemaValidator}
 import dqsuite.DQSuiteDatasetContext
 import dqsuite.deequ.DeequSchemaFactory
-import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 
-case class SchemaCheckRunner(
+private[dqsuite] case class SchemaCheckRunner(
   context: DQSuiteDatasetContext,
 ) {
   def run(df: DataFrame): SchemaCheckResult = {

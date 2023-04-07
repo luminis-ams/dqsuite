@@ -7,11 +7,14 @@ private[dqsuite] sealed trait SchemaColumnDefinitionConfig {
   def column: String
 
   def required: Boolean
+
+  def alias: Option[String]
 }
 
 private[dqsuite] case class SchemaExprConfig(
   column: String,
   required: Boolean,
+  alias: Option[String],
   expression: String,
 ) extends SchemaColumnDefinitionConfig
 
@@ -22,6 +25,7 @@ private[dqsuite] object SchemaExprConfig {
     SchemaExprConfig(
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
+      c.getOptional[String]("alias"),
       c.get[String]("expression"),
     )
   }
@@ -30,6 +34,7 @@ private[dqsuite] object SchemaExprConfig {
 private[dqsuite] case class StringColumnConfig(
   column: String,
   required: Boolean,
+  alias: Option[String],
   isNullable: Boolean = true,
   minLength: Option[Int] = None,
   maxLength: Option[Int] = None,
@@ -43,6 +48,7 @@ private[dqsuite] object StringColumnConfig {
     StringColumnConfig(
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
+      c.getOptional[String]("alias"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true),
       c.getOptional[Int]("min_length"),
       c.getOptional[Int]("max_length"),
@@ -54,6 +60,7 @@ private[dqsuite] object StringColumnConfig {
 private[dqsuite] case class IntColumnConfig(
   column: String,
   required: Boolean,
+  alias: Option[String],
   isNullable: Boolean = true,
   minValue: Option[Int] = None,
   maxValue: Option[Int] = None
@@ -66,6 +73,7 @@ private[dqsuite] object IntColumnConfig {
     IntColumnConfig(
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
+      c.getOptional[String]("alias"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true),
       c.getOptional[Int]("min_value"),
       c.getOptional[Int]("max_value")
@@ -76,6 +84,7 @@ private[dqsuite] object IntColumnConfig {
 private[dqsuite] case class DecimalColumnConfig(
   column: String,
   required: Boolean,
+  alias: Option[String],
   precision: Int,
   scale: Int,
   isNullable: Boolean = true,
@@ -88,6 +97,7 @@ private[dqsuite] object DecimalColumnConfig {
     DecimalColumnConfig(
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
+      c.getOptional[String]("alias"),
       c.get[Int]("precision"),
       c.get[Int]("scale"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true)
@@ -98,6 +108,7 @@ private[dqsuite] object DecimalColumnConfig {
 private[dqsuite] case class TimestampColumnConfig(
   column: String,
   required: Boolean,
+  alias: Option[String],
   mask: String,
   isNullable: Boolean = true
 ) extends SchemaColumnDefinitionConfig
@@ -109,6 +120,7 @@ private[dqsuite] object TimestampColumnConfig {
     TimestampColumnConfig(
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
+      c.getOptional[String]("alias"),
       c.get[String]("mask"),
       c.getOptional[Boolean]("is_nullable").getOrElse(true)
     )
@@ -120,12 +132,12 @@ private[dqsuite] object SchemaColumnDefinitionConfig {
     val c = Configuration(config)
 
     c.getOptional[String]("type").getOrElse("expression") match {
-      case "expression"      => SchemaExprConfig.loader.load(config, path)
-      case "string"    => StringColumnConfig.loader.load(config, path)
-      case "int"       => IntColumnConfig.loader.load(config, path)
-      case "decimal"   => DecimalColumnConfig.loader.load(config, path)
-      case "timestamp" => TimestampColumnConfig.loader.load(config, path)
-      case _           => throw new RuntimeException("Unknown type")
+      case "expression" => SchemaExprConfig.loader.load(config, path)
+      case "string"     => StringColumnConfig.loader.load(config, path)
+      case "int"        => IntColumnConfig.loader.load(config, path)
+      case "decimal"    => DecimalColumnConfig.loader.load(config, path)
+      case "timestamp"  => TimestampColumnConfig.loader.load(config, path)
+      case _            => throw new RuntimeException("Unknown type")
     }
   }
 }

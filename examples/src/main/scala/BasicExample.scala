@@ -61,7 +61,9 @@ object BasicExample {
       case CheckStatus.Error   => throw new RuntimeException("Validation failed")
     }
 
-    val dyf = DynamicFrame(df, glueContext)
+    val dfClean = dsContext.postprocess(df)
+
+    val dyf = DynamicFrame(dfClean, glueContext)
     dyf.printSchema()
   }
 }

@@ -11,7 +11,7 @@ import org.apache.spark.sql.DataFrame
 
 import java.time.Instant
 
-case class ValidationRunner(
+private[dqsuite] case class ValidationRunner(
   context: DQSuiteDatasetContext,
   anomalyDetection: Boolean = true,
 ) {
