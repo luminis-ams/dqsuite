@@ -119,8 +119,8 @@ private[dqsuite] object SchemaColumnDefinitionConfig {
   implicit val loader: ConfigLoader[SchemaColumnDefinitionConfig] = (config: Config, path: String) => {
     val c = Configuration(config)
 
-    c.getOptional[String]("type").getOrElse("expr") match {
-      case "expr"      => SchemaExprConfig.loader.load(config, path)
+    c.getOptional[String]("type").getOrElse("expression") match {
+      case "expression"      => SchemaExprConfig.loader.load(config, path)
       case "string"    => StringColumnConfig.loader.load(config, path)
       case "int"       => IntColumnConfig.loader.load(config, path)
       case "decimal"   => DecimalColumnConfig.loader.load(config, path)

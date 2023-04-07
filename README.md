@@ -82,6 +82,17 @@ See example below:
 ```yaml
 sources:
   sales:
+    schema:
+      - column: "Invoice/Item Number"
+        type: string
+        is_nullable: false
+      - column: "date"
+        type: timestamp
+        mask: "yyyy-MM-dd"
+      - column: "Volume Sold (Liters)"
+        type: decimal
+        precision: 12
+        scale: 2
     analyzers:
       - column: "Dataset"
         expression: Size()
@@ -108,40 +119,77 @@ sources:
 ```
 
 * **Sources**: Datasource configurations are grouped under the `sources` key with a unique name for each datasource used
-  during the run. Each datasource has configuration for **analyzers**, **checks** and **anomaly_detection**.
+  during the run. Each datasource has configuration for **schema**, **analyzers**, **checks** and **anomaly_detection**.
 
-* **Analyzers**: Analyzers are used to produce metrics that can be used for anomaly detection.
-  * **Column**: Column name to run the analyzer on.
-  * **Expression**: Deequ analyzer expression to run on the column. (`@` is substituted with the column name)
+### Schema
+
+Schema is used to check input data against the expected schema.
+
+* **column**: Column name to run the check on.
+* **required**: Whether the column is required or not. (default: true)
+* **is_nullable**: Whether the column can be null or not. (default: true)
+* **type**: Type of the column. (string, integer, decimal, timestamp, expression)
+* For string columns:
+    * **min_length** (optional): Minimum length of the string column. (default: 0)
+    * **max_length** (optional): Maximum length of the string column. (default: Infty)
+    * **matches** (optional): Regex pattern to check the data against.. (default: None)
+* For integer columns:
+    * **min_value** (optional): Minimum value of the integer column. (default: 0)
+    * **max_value** (optional): Maximum value of the integer column. (default: Infty)
+* For decimal columns:
+    * **precision**: Precision of the decimal column.
+    * **scale**: Scale of the decimal column.
+* For timestamp columns:
+    * **mask**: Mask to used to parse the timestamp column.
+* For expression columns:
+    * **expression**: A valid deequ `RowLevelSchema` method.
+
+### Analyzers
+
+Analyzers are used to produce metrics that can be used for anomaly detection.
+
+* **column**: Column name to run the analyzer on.
+* **expression**: Deequ analyzer expression to run on the column. (`@` is substituted with the column name)
     * Use :: to chain multiple analyzers.
-    * **Enabled**: Whether to run the check or not. (default: true)
-    * See [deequ Analyzers](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/analyzers) for options.
-* **Checks**: Checks are used to validate the data quality.
-  * **Column**: Column name to run the check on.
-  * **Level**: Level of the check. (error, warning, info)
-  * **Name**: Name of the check.
-  * **Expression**: Deequ check expression to run on the column. (`@` is substituted with the column name)
-  * **Enabled**: Whether to run the check or not. (default: true)
-    * See [deequ Checks](https://github.com/awslabs/deequ/blob/master/src/main/scala/com/amazon/deequ/checks/Check.scala) for options.
-* **Anomaly Detection**: Anomaly detection is used to detect anomalies in the metrics produced by the analyzers. It acts as an additional check.
-  * **Column**: Column name to run the check on.
-  * **Level**: Level of the check. (error, warning, info)
-  * **Description**: Description of the anomaly.
-  * **Expression**: Deequ analyzer expression to run on the column. (`@` is substituted with the column name)
-  * **Strategy**: Strategy to use for anomaly detection.
-    * See [deequ Anomaly Detection Strategies](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/anomalydetection) for options
-  * **Window**: Window (in seconds) to use for historical metric gathering. (default: infinite)
-  * **Enabled**: Whether to run the check or not. (default: true)
+    * **enabled**: Whether to run the check or not. (default: true)
+    * See [deequ Analyzers](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/analyzers) for
+      options.
+
+### Checks
+
+Checks are used to validate the data quality.
+
+* **column**: Column name to run the check on.
+* **level**: Level of the check. (error, warning, info)
+* **name**: Name of the check.
+* **expression**: Deequ check expression to run on the column. (`@` is substituted with the column name)
+* **enabled**: Whether to run the check or not. (default: true)
+    * See [deequ Checks](https://github.com/awslabs/deequ/blob/master/src/main/scala/com/amazon/deequ/checks/Check.scala)
+    for options.
+
+### Anomaly Detection
+
+Anomaly detection is used to detect anomalies in the metrics produced by the analyzers. It acts as an additional check.
+
+* **column**: Column name to run the check on.
+* **level**: Level of the check. (error, warning, info)
+* **description**: Description of the anomaly.
+* **expression**: Deequ analyzer expression to run on the column. (`@` is substituted with the column name)
+* **strategy**: Strategy to use for anomaly detection.
+    * See [deequ Anomaly Detection Strategies](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/anomalydetection)
+    for options
+* **window**: Window (in seconds) to use for historical metric gathering. (default: infinite)
+* **enabled**: Whether to run the check or not. (default: true)
 
 ## Usage
 
 ### Scala
 
 Create the context by providing additional parameters such as result paths and repository confgiuration:
+
 ```scala
 // Configure DQSuite
-val dqsContext = DQSuiteContextBuilder
-  .builder
+val dqsContext = DQSuiteContextBuilder.builder
   .withConfigPath(args("config_path"))
   .withResultPath("./out/results")
   .withMetricsPath("./out/metrics")
@@ -150,18 +198,28 @@ val dqsContext = DQSuiteContextBuilder
 ```
 
 Select the source / source configuration you will be using for profiling:
+
 ```scala
 val dsContext = dqsContext.withDataset("sales")
 ```
 
-Data profiling computes metrics on your data inferred using some basic rules and data schema. 
+Check schema and data types of your data:
+
+```scala
+val schemaCheckResult = dsContext.checkSchema(dfRaw)
+assert(schemaCheckResult.isValid)
+```
+
+Data profiling computes metrics on your data inferred using some basic rules and data schema.
 It emits these profiling results as well as some suggestions on checks you may want to configure.
+
 ```scala
 val profilingResult = dsContext.profile(df)
 logger.info(s"Profiling finished. Used ${profilingResult.numRecordsUsedForProfiling} for profiling")
 ```
 
-Validation runs configured metrics, checks and anomaly detection against your data. Run it using: 
+Validation runs configured metrics, checks and anomaly detection against your data. Run it using:
+
 ```scala
 val validationResult = dsContext.validate(df)
 validationResult.status match {
@@ -171,34 +229,44 @@ validationResult.status match {
 }
 ```
 
-
 ### Python
 
 Create the context by providing additional parameters such as result paths and repository confgiuration:
+
 ```python
 # Configure DQSuite
 dqsContext = (
     DQSuiteContextBuilder.builder(spark)
-        .withConfigPath(config_path)
-        .withResultPath("./out/results")
-        .withMetricsPath("./out/metrics")
-        .build()
+    .withConfigPath(config_path)
+    .withResultPath("./out/results")
+    .withMetricsPath("./out/metrics")
+    .build()
 )
 ```
 
 Select the source / source configuration you will be using for profiling:
+
 ```python
 dsContext = dqsContext.withDataset("sales")
 ```
 
+Check schema and data types of your data:
+
+```python
+schemaCheckResult = dsContext.checkSchema(dfRaw)
+assert schemaCheckResult.isValid
+```
+
 Data profiling computes metrics on your data inferred using some basic rules and data schema.
 It emits these profiling results as well as some suggestions on checks you may want to configure.
+
 ```python
 profilingResult = dsContext.profile(df)
 print(f"Profiling finished. Used {profilingResult.numRecordsUsedForProfiling} for profiling")
 ```
 
 Validation runs configured metrics, checks and anomaly detection against your data. Run it using:
+
 ```python
 validationResult = dsContext.validate(df)
 if validationResult.status == "Error":
@@ -245,7 +313,7 @@ If you want to use the dataquality suite in your scripts you need additional pyt
 
 ## Backlog
 
-* [ ] Schema Checking
+* [x] Schema Checking
 * [x] Run 2022 partitions through analyzer
 * [x] Add configurable repository
 * [x] Anomaly Detection configuration

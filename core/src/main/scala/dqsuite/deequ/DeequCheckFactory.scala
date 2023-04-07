@@ -4,7 +4,7 @@ import com.amazon.deequ.checks.Check
 import dqsuite.config.{CheckConfig, SourceConfig}
 import dqsuite.utils.RuntimeCompileUtils
 
-object DeequCheckFactory {
+private[dqsuite] object DeequCheckFactory {
   private def build(config: CheckConfig): Option[Check] = {
     if (!config.enabled) {
       return None

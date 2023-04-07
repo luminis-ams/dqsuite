@@ -12,7 +12,7 @@ private[dqsuite] trait ConfigLoader[A] {
   def map[B](f: A => B): ConfigLoader[B] = (config, path) => f(self.load(config, path))
 }
 
-object ConfigLoader {
+private[dqsuite] object ConfigLoader {
   def apply[A](f: Config => String => A): ConfigLoader[A] = f(_)(_)
 
   implicit val stringLoader: ConfigLoader[String] = ConfigLoader(_.getString)

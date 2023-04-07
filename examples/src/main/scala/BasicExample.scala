@@ -45,7 +45,6 @@ object BasicExample {
     if (schemaCheckResult.missingColumns.nonEmpty) {
       logger.warn(s"Missing columns: ${schemaCheckResult.missingColumns.mkString(", ")}")
     }
-
     assert(schemaCheckResult.isValid)
 
     // Use valid rows

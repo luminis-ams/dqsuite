@@ -57,7 +57,7 @@ private[dqsuite] object DeequAnomalyDetectorFactory {
   }
 }
 
-case class AnomalyDetectionInstance(
+private[dqsuite] case class AnomalyDetectionInstance(
   analyser: Analyzer[_ <: State[_], Metric[Double]],
   strategy: AnomalyDetectionStrategy,
   config: AnomalyCheckConfig,
