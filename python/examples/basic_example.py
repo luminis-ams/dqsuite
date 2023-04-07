@@ -20,12 +20,11 @@ df_raw = (
     .option("header", "true")
     .option("inferSchema", "false")
     .csv('../examples/data/iowa_liquor_sales_demo/iowa_liquor_sales_01.csv')
-    .withColumn("date", F.col("date").cast(T.StringType()))
 )
 
 schemaCheckResult = dsContext.checkSchema(df_raw)
 print(f"Schema check finished. Found {schemaCheckResult.numInvalidRows} invalid rows" +
-      f" and {schemaCheckResult.numValidRows} valid rows")
+      f" and {schemaCheckResult.numValidRows} valid rows. Columns {schemaCheckResult.missingColumns} are missing")
 assert schemaCheckResult.isValid, "Schema check failed"
 df = schemaCheckResult.validRows
 

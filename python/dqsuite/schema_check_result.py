@@ -8,11 +8,11 @@ from dqsuite.utils import PY4JClassWrapper
 class SchemaCheckResult(PY4JClassWrapper):
     @property
     def missingColumns(self) -> List[str]:
-        return self._instance.missingColumns()
+        return seq_to_list(self._instance.missingColumns())
 
     @property
     def extraColumns(self) -> List[str]:
-        return self._instance.extraColumns()
+        return seq_to_list(self._instance.extraColumns())
 
     @property
     def numValidRows(self) -> int:
@@ -47,3 +47,7 @@ class SchemaCheckResult(PY4JClassWrapper):
             jsqlContext=self._spark_session._jsparkSession.sqlContext(),
         )
         return DataFrame(dfj, sql_ctx)
+
+
+def seq_to_list(seq):
+    return [seq.apply(i) for i in range(seq.size())]

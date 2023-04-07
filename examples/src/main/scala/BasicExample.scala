@@ -35,7 +35,6 @@ object BasicExample {
       .option("header", "true")
       .option("inferSchema", "false")
       .csv(args("input_file_path"))
-      .withColumn("date", F.col("date").cast(T.StringType))
 
     // Run schema check
     val schemaCheckResult = dsContext.checkSchema(dfRaw)
