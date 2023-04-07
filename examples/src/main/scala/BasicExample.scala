@@ -38,7 +38,7 @@ object BasicExample {
       .withColumn("date", F.col("date").cast(T.StringType))
 
     // Run schema check
-    val schemaCheckResult = dsContext.schemaCheck(dfRaw)
+    val schemaCheckResult = dsContext.checkSchema(dfRaw)
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
         s" and ${schemaCheckResult.numValidRows} valid rows")

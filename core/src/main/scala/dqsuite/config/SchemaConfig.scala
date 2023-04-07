@@ -5,10 +5,6 @@ import com.typesafe.config.Config
 
 private[dqsuite] sealed trait SchemaColumnDefinitionConfig
 
-private[dqsuite] trait ToDeequSchema {
-  def toDeequSchema: RowLevelSchema
-}
-
 private[dqsuite] case class SchemaExprConfig(
   expression: String,
 ) extends SchemaColumnDefinitionConfig
@@ -30,12 +26,6 @@ private[dqsuite] case class StringColumnConfig(
   maxLength: Option[Int] = None,
   matches: Option[String] = None
 ) extends SchemaColumnDefinitionConfig
-    with ToDeequSchema {
-  override def toDeequSchema: RowLevelSchema = {
-    RowLevelSchema()
-      .withStringColumn(column, isNullable, minLength, maxLength, matches)
-  }
-}
 
 private[dqsuite] object StringColumnConfig {
   implicit val loader: ConfigLoader[StringColumnConfig] = (config: Config, path: String) => {
@@ -57,13 +47,6 @@ private[dqsuite] case class IntColumnConfig(
   minValue: Option[Int] = None,
   maxValue: Option[Int] = None
 ) extends SchemaColumnDefinitionConfig
-    with ToDeequSchema {
-
-  override def toDeequSchema: RowLevelSchema = {
-    RowLevelSchema()
-      .withIntColumn(column, isNullable, minValue, maxValue)
-  }
-}
 
 private[dqsuite] object IntColumnConfig {
   implicit val loader: ConfigLoader[IntColumnConfig] = (config: Config, path: String) => {
@@ -84,13 +67,6 @@ private[dqsuite] case class DecimalColumnConfig(
   scale: Int,
   isNullable: Boolean = true,
 ) extends SchemaColumnDefinitionConfig
-    with ToDeequSchema {
-
-  override def toDeequSchema: RowLevelSchema = {
-    RowLevelSchema()
-      .withDecimalColumn(column, precision, scale, isNullable)
-  }
-}
 
 private[dqsuite] object DecimalColumnConfig {
   implicit val loader: ConfigLoader[DecimalColumnConfig] = (config: Config, path: String) => {
@@ -110,13 +86,6 @@ private[dqsuite] case class TimestampColumnConfig(
   mask: String,
   isNullable: Boolean = true
 ) extends SchemaColumnDefinitionConfig
-    with ToDeequSchema {
-
-  override def toDeequSchema: RowLevelSchema = {
-    RowLevelSchema()
-      .withTimestampColumn(column, mask, isNullable)
-  }
-}
 
 private[dqsuite] object TimestampColumnConfig {
   implicit val loader: ConfigLoader[TimestampColumnConfig] = (config: Config, path: String) => {

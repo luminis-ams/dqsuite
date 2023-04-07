@@ -6,21 +6,45 @@ sources:
         is_nullable: false
       - column: "Date"
         type: timestamp
+        mask: "yyyy-MM-dd"
         is_nullable: false
-      - expression: .withStringColumn("Store Name")
-      - expression: .withStringColumn("Address")
-      - expression: .withStringColumn("City")
-      - expression: .withStringColumn("Zip Code")
-      - expression: .withStringColumn("County")
-      - expression: .withStringColumn("Category Name")
-      - expression: .withStringColumn("Vendor Name")
-      - expression: .withIntColumn("Item Number", isNullable = false)
-      - expression: .withStringColumn("Item Description")
-      - expression: .withDecimalColumn("Bottle Volume (ml)", precision = 10, scale = 2)
-      - expression: .withDecimalColumn("State Bottle Cost", precision = 10, scale = 2)
-      - expression: .withIntColumn("Bottles Sold")
-      - expression: .withDecimalColumn("Sale", precision = 12, scale = 2)
-      - expression: .withDecimalColumn("Volume Sold (Liters)", precision = 12, scale = 2)
+      - column: "Store Name"
+        type: string
+      - column: "Address"
+        type: string
+      - column: "City"
+        type: string
+      - column: "Zip Code"
+        type: string
+      - column: "County"
+        type: string
+      - column: "Category Name"
+        type: string
+      - column: "Vendor Name"
+        type: string
+      - column: "Item Number"
+        type: int
+        is_nullable: false
+      - column: "Item Description"
+        type: string
+      - column: "Bottle Volume (ml)"
+        type: decimal
+        precision: 10
+        scale: 2
+      - column: "State Bottle Cost"
+        type: decimal
+        precision: 10
+        scale: 2
+      - column: "Bottles Sold"
+        type: int
+      - column: "Sale"
+        type: decimal
+        precision: 12
+        scale: 2
+      - column: "Volume Sold (Liters)"
+        type: decimal
+        precision: 12
+        scale: 2
     analyzers:
       - column: "Dataset"
         expression: Size()

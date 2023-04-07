@@ -8,6 +8,7 @@ import com.amazon.deequ.schema.{RowLevelSchema, RowLevelSchemaValidationResult, 
 import com.amazon.deequ.suggestions.{ConstraintSuggestionResult, ConstraintSuggestionRunner, Rules}
 import com.amazon.deequ.{VerificationResult, VerificationSuite}
 import dqsuite.config.SourceConfig
+import dqsuite.deequ.{AnomalyDetectionInstance, DeequAnalyserFactory, DeequAnomalyDetectorFactory, DeequCheckFactory, DeequSchemaFactory}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 
@@ -42,11 +43,11 @@ case class DQSuiteDatasetContext(
       .run()
   }
 
-  def schemaCheck(
+  def checkSchema(
     df: DataFrame,
   ): RowLevelSchemaValidationResult = {
 
-    val schema = DeequFactory.buildSchemaDefinitions(config)
+    val schema = DeequSchemaFactory.buildSeq(config)
     RowLevelSchemaValidator
       .validate(df, schema)
   }
@@ -55,17 +56,17 @@ case class DQSuiteDatasetContext(
     df: DataFrame,
     anomalyDetection: Boolean = true,
   ): VerificationResult = {
-    val checks = DeequFactory.buildChecks(config)
+    val checks = DeequCheckFactory.buildSeq(config)
     if (checks.isEmpty) {
       logger.warn("No checks found for dataset")
     }
 
-    val analyzers = DeequFactory.buildAnalyzers(config)
+    val analyzers = DeequAnalyserFactory.buildSeq(config)
     if (analyzers.isEmpty) {
       logger.warn("No analyzers found for dataset")
     }
 
-    val anomalyDetectors = DeequFactory.buildAnomalyDetectors(
+    val anomalyDetectors = DeequAnomalyDetectorFactory.buildSeq(
       Some(Instant.ofEpochMilli(resultKey.dataSetDate)),
       config,
       Map("dataset" -> resultKey.tags("dataset"))
