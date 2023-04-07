@@ -1,24 +1,10 @@
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional
 
-from pydeequ.verification import VerificationResult
 from pyspark.sql import SparkSession
 
-
-class PY4JClassWrapper:
-    def __init__(self, spark_session: SparkSession, instance: Any) -> None:
-        super().__init__()
-        self._spark_session = spark_session
-        self._instance = instance
-
-    def _callj(self, attr, *args, **kwargs):
-        return getattr(self._instance, attr)(*args, **kwargs)
-
-    def __getattr__(self, attr):
-        return getattr(self._instance, attr)
-
-    def _to_optionj(self, value):
-        return self._spark_session._jvm.scala.Option.apply(value)
+from dqsuite.dqsuite_dataset_context import DQSuiteDatasetContext
+from dqsuite.utils import PY4JClassWrapper
 
 
 class DQSuiteContextBuilder(PY4JClassWrapper):
@@ -66,11 +52,3 @@ class DQSuiteContext(PY4JClassWrapper):
             self._to_optionj(partition),
         )
         return DQSuiteDatasetContext(self._spark_session, context)
-
-
-class DQSuiteDatasetContext(PY4JClassWrapper):
-    def profile(self, df) -> Any:
-        return self._callj("profile", df._jdf)
-
-    def validate(self, df, anomalyDetection: bool = True) -> Any:
-        return VerificationResult(self._spark_session, self._callj("validate", df._jdf, anomalyDetection))

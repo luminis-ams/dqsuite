@@ -15,13 +15,19 @@ dqsContext = (
 )
 dsContext = dqsContext.withDataset("sales")
 
-df = (
+df_raw = (
     spark.read
     .option("header", "true")
-    .option("inferSchema", "true")
+    .option("inferSchema", "false")
     .csv('../examples/data/iowa_liquor_sales_demo/iowa_liquor_sales_01.csv')
     .withColumn("date", F.col("date").cast(T.StringType()))
 )
+
+schemaCheckResult = dsContext.checkSchema(df_raw)
+print(f"Schema check finished. Found {schemaCheckResult.numInvalidRows} invalid rows" +
+      f" and {schemaCheckResult.numValidRows} valid rows")
+assert int(schemaCheckResult.numInvalidRows) == 0, "Schema check failed"
+df = schemaCheckResult.validRows
 
 profilingResult = dsContext.profile(df)
 print(f"Profiling finished. Used {profilingResult.numRecordsUsedForProfiling()} for profiling")
