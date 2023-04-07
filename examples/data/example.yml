@@ -1,5 +1,26 @@
 sources:
   sales:
+    schema:
+      - column: "Invoice/Item Number"
+        type: string
+        is_nullable: false
+      - column: "Date"
+        type: timestamp
+        is_nullable: false
+      - expression: .withStringColumn("Store Name")
+      - expression: .withStringColumn("Address")
+      - expression: .withStringColumn("City")
+      - expression: .withStringColumn("Zip Code")
+      - expression: .withStringColumn("County")
+      - expression: .withStringColumn("Category Name")
+      - expression: .withStringColumn("Vendor Name")
+      - expression: .withIntColumn("Item Number", isNullable = false)
+      - expression: .withStringColumn("Item Description")
+      - expression: .withDecimalColumn("Bottle Volume (ml)", precision = 10, scale = 2)
+      - expression: .withDecimalColumn("State Bottle Cost", precision = 10, scale = 2)
+      - expression: .withIntColumn("Bottles Sold")
+      - expression: .withDecimalColumn("Sale", precision = 12, scale = 2)
+      - expression: .withDecimalColumn("Volume Sold (Liters)", precision = 12, scale = 2)
     analyzers:
       - column: "Dataset"
         expression: Size()

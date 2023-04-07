@@ -7,7 +7,12 @@ import org.yaml.snakeyaml.Yaml
 
 import java.io.InputStream
 
-private[dqsuite] case class AnalyzerConfig(column: String, expression: String, where: Option[String], enabled: Boolean)
+private[dqsuite] case class AnalyzerConfig(
+  column: String,
+  expression: String,
+  where: Option[String],
+  enabled: Boolean
+)
 
 private[dqsuite] object AnalyzerConfig {
   implicit val loader: ConfigLoader[AnalyzerConfig] = (config: Config, path: String) => {
@@ -44,6 +49,8 @@ private[dqsuite] object CheckConfig {
   }
 }
 
+
+
 private[dqsuite] case class AnomalyDetectionConfig(
   column: String,
   level: CheckLevel.Value,
@@ -73,10 +80,11 @@ private[dqsuite] object AnomalyDetectionConfig {
 }
 
 private[dqsuite] case class SourceConfig(
-  tags: Map[String, String] = Map.empty,
-  analyzers: Seq[AnalyzerConfig],
-  checks: Seq[CheckConfig],
-  anomalyDetection: Seq[AnomalyDetectionConfig]
+                                          tags: Map[String, String] = Map.empty,
+                                          schema: Option[Seq[SchemaColumnDefinitionConfig]],
+                                          analyzers: Seq[AnalyzerConfig],
+                                          checks: Seq[CheckConfig],
+                                          anomalyDetection: Seq[AnomalyDetectionConfig]
 )
 
 private[dqsuite] object SourceConfig {
@@ -85,6 +93,7 @@ private[dqsuite] object SourceConfig {
 
     SourceConfig(
       c.getOptional[Map[String, String]]("tags").getOrElse(Map.empty),
+      c.getOptional[Seq[SchemaColumnDefinitionConfig]]("schema"),
       c.getSeq[AnalyzerConfig]("analyzers"),
       c.getSeq[CheckConfig]("checks"),
       c.getSeq[AnomalyDetectionConfig]("anomaly_detection")

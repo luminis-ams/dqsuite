@@ -40,7 +40,7 @@ case class DQSuiteContext(
       ) ++ partition.map("partition" -> _) ++ sourceConfig.tags
     )
 
-    val resultPath = this.resultPath.resolve(s"$name/").resolve(s"./$runNameOuter/")
+    val resultPath = this.resultPath.resolve(s"$name/").resolve(s"./runName=$runNameOuter/")
     val metricsPath = this.metricsPath.resolve(s"$name/")
     val repositoryPath = metricsPath.resolve("repository/").resolve("metrics.json")
 

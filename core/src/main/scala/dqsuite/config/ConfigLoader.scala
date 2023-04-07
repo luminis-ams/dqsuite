@@ -16,6 +16,7 @@ object ConfigLoader {
   def apply[A](f: Config => String => A): ConfigLoader[A] = f(_)(_)
 
   implicit val stringLoader: ConfigLoader[String] = ConfigLoader(_.getString)
+  implicit val intLoader: ConfigLoader[Int] = ConfigLoader(_.getInt)
   implicit val booleanLoader: ConfigLoader[Boolean] = ConfigLoader(_.getBoolean)
   implicit val longLoader: ConfigLoader[Long] = ConfigLoader(_.getLong)
 

@@ -5,10 +5,12 @@ import com.amazon.deequ.analyzers.{Analyzer, State}
 import com.amazon.deequ.anomalydetection.AnomalyDetectionStrategy
 import com.amazon.deequ.checks.{Check, CheckLevel}
 import com.amazon.deequ.metrics.Metric
-import dqsuite.config.{AnalyzerConfig, AnomalyDetectionConfig, CheckConfig, SourceConfig}
+import com.amazon.deequ.schema.{ColumnDefinition, RowLevelSchema}
+import dqsuite.config.{AnalyzerConfig, AnomalyDetectionConfig, CheckConfig, DecimalColumnConfig, IntColumnConfig, SchemaColumnDefinitionConfig, SchemaExprConfig, SourceConfig, StringColumnConfig, TimestampColumnConfig, ToDeequSchema}
 
 import java.time.Instant
 import scala.reflect.runtime.currentMirror
+import scala.reflect.runtime.universe.Quasiquote
 import scala.tools.reflect.ToolBox
 
 object DeequFactory {
@@ -108,6 +110,35 @@ object DeequFactory {
 
   private def evaluate(source: String): Any = {
     toolbox.eval(toolbox.parse(source))
+  }
+
+  def buildSchemaColumnDefinition(
+    config: SchemaColumnDefinitionConfig,
+  ): RowLevelSchema = {
+    config match {
+      case col: ToDeequSchema => col.toDeequSchema
+      case col: SchemaExprConfig => {
+        val source =
+          s"""
+             |import com.amazon.deequ.schema._
+             |RowLevelSchema()
+             |${col.expression}
+          """.stripMargin
+        evaluate(source).asInstanceOf[RowLevelSchema]
+      }
+      case _ => throw new Exception("Unsupported schema column type")
+    }
+  }
+
+  def buildSchemaDefinitions(
+    config: SourceConfig,
+  ): RowLevelSchema = {
+    val columnDefinitions = config.schema
+      .getOrElse(Seq.empty)
+      .map(DeequFactory.buildSchemaColumnDefinition)
+      .flatMap(_.columnDefinitions)
+
+    RowLevelSchema(columnDefinitions)
   }
 }
 

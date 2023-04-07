@@ -4,6 +4,7 @@ import com.amazon.deequ.analyzers.{Analyzer, State}
 import com.amazon.deequ.checks.CheckStatus
 import com.amazon.deequ.metrics.Metric
 import com.amazon.deequ.repository.{MetricsRepository, ResultKey}
+import com.amazon.deequ.schema.{RowLevelSchema, RowLevelSchemaValidationResult, RowLevelSchemaValidator, StringColumnDefinition}
 import com.amazon.deequ.suggestions.{ConstraintSuggestionResult, ConstraintSuggestionRunner, Rules}
 import com.amazon.deequ.{VerificationResult, VerificationSuite}
 import dqsuite.config.SourceConfig
@@ -41,12 +42,19 @@ case class DQSuiteDatasetContext(
       .run()
   }
 
+  def schemaCheck(
+    df: DataFrame,
+  ): RowLevelSchemaValidationResult = {
+
+    val schema = DeequFactory.buildSchemaDefinitions(config)
+    RowLevelSchemaValidator
+      .validate(df, schema)
+  }
+
   def validate(
     df: DataFrame,
     anomalyDetection: Boolean = true,
   ): VerificationResult = {
-    logger.info("Running validator")
-
     val checks = DeequFactory.buildChecks(config)
     if (checks.isEmpty) {
       logger.warn("No checks found for dataset")
@@ -76,6 +84,7 @@ case class DQSuiteDatasetContext(
 
     val checksPath = resultPath.resolve("checks.json")
 
+    logger.info("Running validation")
     var suite = VerificationSuite()
       .onData(df)
       .useSparkSession(context.spark)
