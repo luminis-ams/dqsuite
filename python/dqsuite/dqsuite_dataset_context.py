@@ -11,13 +11,13 @@ class DQSuiteDatasetContext(PY4JClassWrapper):
     def profile(self, df) -> Any:
         return self._callj("profile", df._jdf)
 
-    def checkSchema(self, df) -> SchemaCheckResult:
-        return SchemaCheckResult(self._spark_session, self._callj("checkSchema", df._jdf))
+    def checkSchema(self, df, emptyStringAsNull: bool = True) -> SchemaCheckResult:
+        return SchemaCheckResult(self._spark_session, self._callj("checkSchema", df._jdf, emptyStringAsNull))
 
     def validate(self, df, anomalyDetection: bool = True) -> VerificationResult:
         return VerificationResult(self._spark_session, self._callj("validate", df._jdf, anomalyDetection))
 
-    def postprocess(self, df) -> Any:
+    def postprocess(self, df) -> DataFrame:
         dfj = self._callj("postprocess", df._jdf)
 
         sql_ctx = SQLContext(

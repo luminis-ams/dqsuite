@@ -8,6 +8,8 @@ private[dqsuite] sealed trait SchemaColumnDefinitionConfig {
 
   def required: Boolean
 
+  def isNullable: Boolean
+
   def alias: Option[String]
 }
 
@@ -16,6 +18,7 @@ private[dqsuite] case class SchemaExprConfig(
   required: Boolean,
   alias: Option[String],
   expression: String,
+  isNullable: Boolean = true,
 ) extends SchemaColumnDefinitionConfig
 
 private[dqsuite] object SchemaExprConfig {

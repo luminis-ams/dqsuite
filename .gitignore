@@ -50,3 +50,6 @@ resources
 .idea
 *.iml
 out
+
+examples/src/main/scala/GlueExample.scala
+python/examples/glue_example.py

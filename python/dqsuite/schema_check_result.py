@@ -48,6 +48,15 @@ class SchemaCheckResult(PY4JClassWrapper):
         )
         return DataFrame(dfj, sql_ctx)
 
+    def __str__(self):
+        return f"SchemaCheckResult(" \
+               f"missingColumns={self.missingColumns}, " \
+               f"extraColumns={self.extraColumns}, " \
+               f"numValidRows={self.numValidRows}, " \
+               f"numInvalidRows={self.numInvalidRows}, " \
+               f"isValid={self.isValid}" \
+               f")"
+
 
 def seq_to_list(seq):
     return [seq.apply(i) for i in range(seq.size())]

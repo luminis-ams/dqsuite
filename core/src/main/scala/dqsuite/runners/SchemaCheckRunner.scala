@@ -8,6 +8,7 @@ import org.apache.spark.sql.DataFrame
 
 private[dqsuite] case class SchemaCheckRunner(
   context: DQSuiteDatasetContext,
+  emptyStringAsNull: Boolean = true,
 ) {
   def run(df: DataFrame): SchemaCheckResult = {
     // Check for missing columns
@@ -28,8 +29,25 @@ private[dqsuite] case class SchemaCheckRunner(
       .filterNot(df.columns.contains)
 
     // Fill missing columns with nulls
-    val augmentedDf = missingColumns.foldLeft(df) { (df, col) =>
+    var augmentedDf = missingColumns.foldLeft(df) { (df, col) =>
       df.withColumn(col, F.lit(null).cast("string"))
+    }
+
+    // Replace empty strings with nulls (necessary when source file format does not support nulls like CSV)
+    if (emptyStringAsNull) {
+      val nullableColumns = context.config.schema
+        .getOrElse(Seq.empty)
+        .filter(c => !c.required || c.isNullable)
+        .map(_.column)
+        .toSet
+
+      augmentedDf = augmentedDf.schema.fields
+        .filter(_.dataType.typeName == "string")
+        .map(_.name)
+        .filter(nullableColumns.contains)
+        .foldLeft(augmentedDf) { (df, col) =>
+          df.withColumn(col, F.when(F.col(col) === "", null).otherwise(F.col(col)))
+        }
     }
 
     val schema = DeequSchemaFactory.buildSeq(context.config)

@@ -24,8 +24,9 @@ case class DQSuiteDatasetContext(
 
   def checkSchema(
     df: DataFrame,
+    emptyStringAsNull: Boolean = true
   ): SchemaCheckResult = {
-    SchemaCheckRunner(this).run(df)
+    SchemaCheckRunner(this, emptyStringAsNull=emptyStringAsNull).run(df)
   }
 
   def validate(
