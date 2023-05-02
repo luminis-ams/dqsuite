@@ -10,8 +10,9 @@ val sparkVersion = "3.3.0"
 val scalaCompatVersion = "2.12"
 val scalaVersion_ = s"$scalaCompatVersion.7"
 val awsSdkVersion = "2.20.32"
+val awsJavaSdkVersion = "1.12.128"
 
-ThisBuild / version := "0.1"
+ThisBuild / version := "0.2.0"
 ThisBuild / scalaVersion := scalaVersion_
 
 lazy val root = (project in file("."))
@@ -53,7 +54,8 @@ lazy val coreDependencies = Seq(
   "org.yaml" % "snakeyaml" % "2.0",
   // Included in AWS Glue 4.0.0
   "software.amazon.awssdk" % "timestreamwrite" % awsSdkVersion % Provided,
-  "software.amazon.awssdk" % "timestreamquery" % awsSdkVersion % Provided,
+  "software.amazon.awssdk" % "cloudwatch" % awsSdkVersion % Provided,
+//  "com.amazonaws" % "aws-java-sdk-cloudwatchmetrics" % awsJavaSdkVersion % Provided,
   "com.typesafe" % "config" % "1.3.3" % Provided,
 )
 

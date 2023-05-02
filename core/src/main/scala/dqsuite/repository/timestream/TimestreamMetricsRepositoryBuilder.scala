@@ -3,12 +3,11 @@ package dqsuite.repository.timestream
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 import software.amazon.awssdk.core.retry.RetryPolicy
 import software.amazon.awssdk.http.apache.ApacheHttpClient
-import software.amazon.awssdk.services.timestreamquery.TimestreamQueryClient
 import software.amazon.awssdk.services.timestreamwrite.TimestreamWriteClient
 
 import java.time.Duration
 
-private[dqsuite] case class TimestreamMetricsRepositoryBuilder(
+case class TimestreamMetricsRepositoryBuilder(
   databaseName: Option[String] = None,
   tableName: Option[String] = None,
 ) {
@@ -34,13 +33,8 @@ private[dqsuite] case class TimestreamMetricsRepositoryBuilder(
       .overrideConfiguration(overrideConfig)
       .build
 
-    val queryClient = TimestreamQueryClient.builder
-      .httpClientBuilder(httpClientBuilder)
-      .build
-
     new TimestreamMetricsRepository(
       writeClient,
-      queryClient,
       databaseName.get,
       tableName.get
     )

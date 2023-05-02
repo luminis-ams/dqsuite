@@ -353,3 +353,17 @@ One way one would implement this is to have live and staging aggregated states.
 3. Once the whole ELT process is complete (and data is published), the staging state is copied to the live state.
 
 The caveat is that this doesn't work with parallel execution.
+
+## Publishing
+
+### Python
+```shell
+cd python
+twine upload --repository codeartifact dist/dqsuite-0.1.0-py3-none-any.whl
+```
+
+
+### Scala
+```shell
+
+```

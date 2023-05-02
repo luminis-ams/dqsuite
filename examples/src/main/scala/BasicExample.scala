@@ -3,6 +3,7 @@ import com.amazonaws.services.glue.{DynamicFrame, GlueContext}
 import com.amazonaws.services.glue.log.GlueLogger
 import com.amazonaws.services.glue.util.{GlueArgParser, Job}
 import dqsuite.DQSuiteContextBuilder
+import dqsuite.repository.cloudwatch.CloudWatchMetricsRepositoryBuilder
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{functions => F, types => T}
 
@@ -26,6 +27,9 @@ object BasicExample {
       .withResultPath("./out/results")
       .withMetricsPath("./out/metrics")
       .withSparkSession(spark)
+      .withEmpheralRepository(
+        CloudWatchMetricsRepositoryBuilder().useNamespace("dqsuite/etl/example").build
+      )
       .build
 
     val dsContext = dqsContext.withDataset("sales")

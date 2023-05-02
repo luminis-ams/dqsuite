@@ -3,7 +3,6 @@ package dqsuite.repository.timestream
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.repository.{MetricsRepository, MetricsRepositoryMultipleResultsLoader, ResultKey}
 import org.apache.logging.log4j.LogManager
-import software.amazon.awssdk.services.timestreamquery.TimestreamQueryClient
 import software.amazon.awssdk.services.timestreamwrite.TimestreamWriteClient
 import software.amazon.awssdk.services.timestreamwrite.model.{RejectedRecordsException, WriteRecordsRequest}
 
@@ -11,7 +10,6 @@ import scala.jdk.CollectionConverters.seqAsJavaListConverter
 
 private[dqsuite] class TimestreamMetricsRepository(
   timestreamWriteClient: TimestreamWriteClient,
-  timestreamQueryClient: TimestreamQueryClient,
   databaseName: String,
   tableName: String,
 ) extends MetricsRepository {

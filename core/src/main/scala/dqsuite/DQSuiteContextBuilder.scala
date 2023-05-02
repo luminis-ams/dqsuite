@@ -1,7 +1,9 @@
 package dqsuite
 
+import com.amazon.deequ.repository.MetricsRepository
 import dqsuite.config.DQSuiteConfig
-import dqsuite.repository.timestream.{TimestreamMetricsRepository, TimestreamMetricsRepositoryBuilder}
+import dqsuite.repository.cloudwatch.CloudWatchMetricsRepositoryBuilder
+import dqsuite.repository.timestream.TimestreamMetricsRepositoryBuilder
 import dqsuite.utils.{HdfsUtils, PathUtils}
 import org.apache.spark.sql.SparkSession
 
@@ -11,7 +13,7 @@ case class DQSuiteContextBuilder(
   configPath: Option[URI] = None,
   metricsPath: Option[URI] = None,
   resultPath: Option[URI] = None,
-  timestreamRepository: Option[TimestreamMetricsRepository] = None,
+  empheralRepositories: Seq[MetricsRepository] = Seq.empty,
   spark: Option[SparkSession] = None,
 ) {
   def withConfigPath(configPath: URI): DQSuiteContextBuilder = copy(configPath = Some(configPath))
@@ -29,14 +31,8 @@ case class DQSuiteContextBuilder(
   def withResultPath(resultPath: String): DQSuiteContextBuilder =
     copy(resultPath = Some(URI.create(PathUtils.ensureTrailingSlash(resultPath))))
 
-  def withTimestreamRepository(database: String, table: String): DQSuiteContextBuilder =
-    copy(
-      timestreamRepository = Some(
-        TimestreamMetricsRepositoryBuilder.builder
-          .useTable(database, table)
-          .build
-      )
-    )
+  def withEmpheralRepository(repository: MetricsRepository): DQSuiteContextBuilder =
+    copy(empheralRepositories = empheralRepositories :+ repository)
 
   def withSparkSession(spark: SparkSession): DQSuiteContextBuilder = copy(spark = Some(spark))
 
@@ -45,7 +41,7 @@ case class DQSuiteContextBuilder(
       HdfsUtils.readFromFileOnDfs(spark.get, configPath.get.toString)(DQSuiteConfig.loadStream),
       metricsPath.get,
       resultPath.get,
-      timestreamRepository.toSeq,
+      empheralRepositories,
       spark.get,
     )
   }
