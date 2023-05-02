@@ -37,3 +37,7 @@ case class CloudWatchMetricsRepositoryBuilder(
     )
   }
 }
+
+object CloudWatchMetricsRepositoryBuilder {
+  def builder: CloudWatchMetricsRepositoryBuilder = new CloudWatchMetricsRepositoryBuilder()
+}

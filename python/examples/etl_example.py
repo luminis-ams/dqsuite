@@ -16,6 +16,7 @@ dqsContext = (
     .withConfigPath(dq_config_path)
     .withResultPath(f"{dq_output_path}/results")
     .withMetricsPath(f"{dq_output_path}/metrics")
+    .withCloudwatchRepository("dqsuite/etl/example")
     .build()
 )
 

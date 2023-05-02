@@ -29,7 +29,15 @@ class DQSuiteContextBuilder(PY4JClassWrapper):
         return self
 
     def withTimestreamRepository(self, database: str, table: str) -> "DQSuiteContextBuilder":
-        self._instance = self._callj("withTimestreamRepository", database, table)
+        builder = self._spark_session._jvm.dqsuite.repository.timestream.TimestreamMetricsRepositoryBuilder.builder()
+        builder = builder.useTable(database, table)
+        self._instance = self._callj("withEmpheralRepository", builder.build())
+        return self
+
+    def withCloudwatchRepository(self, namespace: str) -> "DQSuiteContextBuilder":
+        builder = self._spark_session._jvm.dqsuite.repository.cloudwatch.CloudWatchMetricsRepositoryBuilder.builder()
+        builder = builder.useNamespace(namespace)
+        self._instance = self._callj("withEmpheralRepository", builder.build())
         return self
 
     def build(self) -> "DQSuiteContext":

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dqsuite"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Egor Dmitriev <egor.dmitriev@luminis.eu>"]
 #readme = "../README.md"
@@ -12,6 +12,9 @@ pyspark = { version = "3.3.0", optional = true }
 
 [tool.poetry.extras]
 pyspark = ["pyspark"]
+
+[tool.poetry.group.dev.dependencies]
+twine = "^4.0.2"
 
 [build-system]
 requires = ["poetry-core"]
