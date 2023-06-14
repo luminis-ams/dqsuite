@@ -21,34 +21,6 @@ To support above mentioned principles, the suite provides the following features
 * Runtime agnostic data quality utilities
 * Python support
 
-## Data Processing Patterns
-
-### Full Refresh
-
-A full refresh is a data processing pattern where the entire dataset is processed and stored.
-
-Example parameter configuration:
-
-```json
-{
-}
-```
-
-### Incremental
-
-An incremental refresh is a data processing pattern where only the new data is processed and stored.
-
-> A lot of incremental pipelines apply UPSERT logic to the data.
-> This should be handled with care as this can cause drift in stateful metric aggregations.
-
-
-Example parameter configuration:
-
-```json
-{
-}
-```
-
 ## Storage
 
 ### Metric Storage
@@ -326,44 +298,24 @@ If you want to use the dataquality suite in your scripts you need additional pyt
 
 5. See `python/examples` folder for examples of how to use the suite.
 
-## Backlog
-
-* [x] Schema Checking
-* [x] Run 2022 partitions through analyzer
-* [x] Add configurable repository
-* [x] Anomaly Detection configuration
-* [x] Load configuration from the S3 path
-* [x] Save check results to S3
-* [x] Save metric results to Timestream and/or S3
-* [x] Python support
-* [ ] Describe flow for both incremental and full refresh datasets
-* [ ] Support ELK stack as a repository for observability
-    * [ ] Add metric publishing to open search (use repos or lambdas (external)?)
-
-### State Saving
-
-Status: **Will not implement** (for now)
-
-Saving states and aggregation is supported but tricky to implement together with data quarantining principle.
-
-One way one would implement this is to have live and staging aggregated states.
-
-1. Live state is used for aggregating metrics with the current state.
-2. The aggregated results are stored in the staging state.
-3. Once the whole ELT process is complete (and data is published), the staging state is copied to the live state.
-
-The caveat is that this doesn't work with parallel execution.
-
 ## Publishing
 
 ### Python
 ```shell
 cd python
+
+aws codeartifact login --tool twine --domain my_domain --domain-owner 111122223333 --repository my_repo
+
 twine upload --repository codeartifact dist/dqsuite-0.1.0-py3-none-any.whl
 ```
 
 
 ### Scala
 ```shell
+export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain my_domain --domain-owner 111122223333 --query authorizationToken --output text --profile profile-name
+
+curl --request PUT https://my_domain-111122223333.d.codeartifact.us-west-2.amazonaws.com/maven/my_repo/com/mycompany/app/my-app/1.0/my-app-1.0.jar \
+     --user "aws:$CODEARTIFACT_AUTH_TOKEN" --header "Content-Type: application/octet-stream" \
+     --data-binary @out/libs/dqsuite-bundle_2.12-0.2.0.jar
 
 ```
