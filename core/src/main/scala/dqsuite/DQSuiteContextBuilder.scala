@@ -14,7 +14,7 @@ case class DQSuiteContextBuilder(
   metricsPath: Option[URI] = None,
   resultPath: Option[URI] = None,
   empheralRepositories: Seq[MetricsRepository] = Seq.empty,
-  spark: Option[SparkSession] = None,
+  spark: Option[SparkSession] = None
 ) {
   def withConfigPath(configPath: URI): DQSuiteContextBuilder = copy(configPath = Some(configPath))
 
@@ -42,7 +42,7 @@ case class DQSuiteContextBuilder(
       metricsPath.get,
       resultPath.get,
       empheralRepositories,
-      spark.get,
+      spark.get
     )
   }
 }

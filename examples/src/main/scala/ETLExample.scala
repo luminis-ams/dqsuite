@@ -10,9 +10,9 @@ import scala.jdk.CollectionConverters.mapAsJavaMapConverter
 
 object ETLExample {
   private val sparkContext: SparkContext = new SparkContext()
-  private val glueContext: GlueContext = new GlueContext(sparkContext)
-  private val spark = glueContext.getSparkSession
-  private val logger = new GlueLogger()
+  private val glueContext: GlueContext   = new GlueContext(sparkContext)
+  private val spark                      = glueContext.getSparkSession
+  private val logger                     = new GlueLogger()
 
   def main(sysArgs: Array[String]): Unit = {
     // * config_path: Path to the data quality configuration file. Can be a local file or a S3 URI.
@@ -35,11 +35,12 @@ object ETLExample {
       .csv(args("input_file_path"))
 
     // Run schema check
-    var dsContext = dqsContext.withDataset("sales_raw")
+    var dsContext         = dqsContext.withDataset("sales_raw")
     var schemaCheckResult = dsContext.checkSchema(dfRaw)
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
-        s" and ${schemaCheckResult.numValidRows} valid rows")
+        s" and ${schemaCheckResult.numValidRows} valid rows"
+    )
     if (schemaCheckResult.missingColumns.nonEmpty) {
       logger.warn(s"Missing columns: ${schemaCheckResult.missingColumns.mkString(", ")}")
     }
@@ -77,7 +78,7 @@ object ETLExample {
           "month",
           "day"
         )
-      )
+    )
 
     // Run dataquality
     dsContext = dqsContext.withDataset("sales_processed")
@@ -85,7 +86,8 @@ object ETLExample {
     schemaCheckResult = dsContext.checkSchema(df)
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
-        s" and ${schemaCheckResult.numValidRows} valid rows")
+        s" and ${schemaCheckResult.numValidRows} valid rows"
+    )
     if (schemaCheckResult.missingColumns.nonEmpty) {
       logger.warn(s"Missing columns: ${schemaCheckResult.missingColumns.mkString(", ")}")
     }

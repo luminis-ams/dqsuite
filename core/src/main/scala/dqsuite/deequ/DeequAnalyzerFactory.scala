@@ -5,14 +5,12 @@ import com.amazon.deequ.metrics.Metric
 import dqsuite.config.{AnalyzerConfig, SourceConfig}
 import dqsuite.utils.RuntimeCompileUtils
 
-private[dqsuite] object DeequAnalyserFactory {
+/** Factory for building Deequ Analyzers from configuration.
+  */
+private[dqsuite] object DeequAnalyzerFactory {
   private[deequ] def build(
-    config: AnalyzerConfig,
+    config: AnalyzerConfig
   ): Seq[Analyzer[_, Metric[_]]] = {
-    if (!config.enabled) {
-      return Seq.empty
-    }
-
     val expression = config.expression.replace("@", s""""${config.column}"""")
     val source =
       s"""
@@ -25,8 +23,10 @@ private[dqsuite] object DeequAnalyserFactory {
   }
 
   def buildSeq(
-    config: SourceConfig,
+    config: SourceConfig
   ): Seq[Analyzer[_, Metric[_]]] = {
-    config.analyzers.flatMap(DeequAnalyserFactory.build)
+    config.analyzers
+      .filter(_.enabled)
+      .flatMap(DeequAnalyzerFactory.build)
   }
 }

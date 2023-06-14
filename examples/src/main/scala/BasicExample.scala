@@ -11,9 +11,9 @@ import scala.jdk.CollectionConverters.mapAsJavaMapConverter
 
 object BasicExample {
   private val sparkContext: SparkContext = new SparkContext()
-  private val glueContext: GlueContext = new GlueContext(sparkContext)
-  private val spark = glueContext.getSparkSession
-  private val logger = new GlueLogger()
+  private val glueContext: GlueContext   = new GlueContext(sparkContext)
+  private val spark                      = glueContext.getSparkSession
+  private val logger                     = new GlueLogger()
 
   def main(sysArgs: Array[String]): Unit = {
     // * config_path: Path to the data quality configuration file. Can be a local file or a S3 URI.
@@ -44,7 +44,8 @@ object BasicExample {
     val schemaCheckResult = dsContext.checkSchema(dfRaw)
     logger.info(
       s"Schema check finished. Found ${schemaCheckResult.numInvalidRows} invalid rows" +
-        s" and ${schemaCheckResult.numValidRows} valid rows")
+        s" and ${schemaCheckResult.numValidRows} valid rows"
+    )
     if (schemaCheckResult.missingColumns.nonEmpty) {
       logger.warn(s"Missing columns: ${schemaCheckResult.missingColumns.mkString(", ")}")
     }

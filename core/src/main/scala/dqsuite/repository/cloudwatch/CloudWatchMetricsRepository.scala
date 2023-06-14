@@ -8,16 +8,22 @@ import software.amazon.awssdk.services.cloudwatch.model.{CloudWatchException, Pu
 
 import scala.jdk.CollectionConverters.seqAsJavaListConverter
 
+/** Implements [[com.amazon.deequ.repository.MetricsRepository]] to save metrics to AWS CloudWatch.
+  * @param cloudWatchClient
+  *   The AWS SDK CloudWatch client
+  * @param namespace
+  *   The CloudWatch namespace to save metrics to
+  */
 private[dqsuite] class CloudWatchMetricsRepository(
   cloudWatchClient: CloudWatchClient,
-  namespace: String,
+  namespace: String
 ) extends MetricsRepository {
   val logger = LogManager.getLogger()
 
   override def save(resultKey: ResultKey, analyzerContext: AnalyzerContext): Unit = {
     val data = CloudWatchAnalysisResultSerde.analysisResultToCloudWatchDatums(resultKey, analyzerContext)
 
-    val dataset = resultKey.tags("dataset")
+    val dataset          = resultKey.tags("dataset")
     val datasetNamespace = s"${namespace}/${dataset}"
 
     val request = PutMetricDataRequest

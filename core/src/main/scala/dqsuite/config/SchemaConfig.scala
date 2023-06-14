@@ -3,22 +3,39 @@ package dqsuite.config
 import com.amazon.deequ.schema.RowLevelSchema
 import com.typesafe.config.Config
 
+/** Base trait for all schema configuration types.
+  */
 private[dqsuite] sealed trait SchemaColumnDefinitionConfig {
+
+  /** @return
+    *   The column name.
+    */
   def column: String
 
+  /** @return
+    *   Whether the column is required to be present in the data or not.
+    */
   def required: Boolean
 
+  /** @return
+    *   Whether the column values can be null or not.
+    */
   def isNullable: Boolean
 
+  /** @return
+    *   Rename the column to this name in the output.
+    */
   def alias: Option[String]
 }
 
+/** Schema check based on a custom deequ [[com.amazon.deequ.schema.RowLevelSchema]] method(s).
+  */
 private[dqsuite] case class SchemaExprConfig(
   column: String,
   required: Boolean,
   alias: Option[String],
   expression: String,
-  isNullable: Boolean = true,
+  isNullable: Boolean = true
 ) extends SchemaColumnDefinitionConfig
 
 private[dqsuite] object SchemaExprConfig {
@@ -29,11 +46,13 @@ private[dqsuite] object SchemaExprConfig {
       c.get[String]("column"),
       c.getOptional[Boolean]("required").getOrElse(true),
       c.getOptional[String]("alias"),
-      c.get[String]("expression"),
+      c.get[String]("expression")
     )
   }
 }
 
+/** Schema check based on deequ [[com.amazon.deequ.schema.StringColumnDefinition]]
+  */
 private[dqsuite] case class StringColumnConfig(
   column: String,
   required: Boolean,
@@ -41,7 +60,7 @@ private[dqsuite] case class StringColumnConfig(
   isNullable: Boolean = true,
   minLength: Option[Int] = None,
   maxLength: Option[Int] = None,
-  matches: Option[String] = None,
+  matches: Option[String] = None
 ) extends SchemaColumnDefinitionConfig
 
 private[dqsuite] object StringColumnConfig {
@@ -60,6 +79,8 @@ private[dqsuite] object StringColumnConfig {
   }
 }
 
+/** Schema check based on deequ [[com.amazon.deequ.schema.IntColumnDefinition]]
+  */
 private[dqsuite] case class IntColumnConfig(
   column: String,
   required: Boolean,
@@ -84,13 +105,15 @@ private[dqsuite] object IntColumnConfig {
   }
 }
 
+/** Schema check based on deequ [[com.amazon.deequ.schema.DecimalColumnDefinition]]
+  */
 private[dqsuite] case class DecimalColumnConfig(
   column: String,
   required: Boolean,
   alias: Option[String],
   precision: Int,
   scale: Int,
-  isNullable: Boolean = true,
+  isNullable: Boolean = true
 ) extends SchemaColumnDefinitionConfig
 
 private[dqsuite] object DecimalColumnConfig {
@@ -108,6 +131,8 @@ private[dqsuite] object DecimalColumnConfig {
   }
 }
 
+/** Schema check based on deequ [[com.amazon.deequ.schema.TimestampColumnDefinition]]
+  */
 private[dqsuite] case class TimestampColumnConfig(
   column: String,
   required: Boolean,

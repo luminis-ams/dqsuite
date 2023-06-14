@@ -14,10 +14,10 @@ case class DQSuiteDatasetContext(
   metricsPath: URI,
   resultPath: URI,
   resultKey: ResultKey,
-  repository: MetricsRepository,
+  repository: MetricsRepository
 ) {
   def profile(
-    df: DataFrame,
+    df: DataFrame
   ): ConstraintSuggestionResult = {
     ProfilingRunner(this).run(df)
   }
@@ -26,18 +26,18 @@ case class DQSuiteDatasetContext(
     df: DataFrame,
     emptyStringAsNull: Boolean = true
   ): SchemaCheckResult = {
-    SchemaCheckRunner(this, emptyStringAsNull=emptyStringAsNull).run(df)
+    SchemaCheckRunner(this, emptyStringAsNull = emptyStringAsNull).run(df)
   }
 
   def validate(
     df: DataFrame,
-    anomalyDetection: Boolean = true,
+    anomalyDetection: Boolean = true
   ): VerificationResult = {
     ValidationRunner(this, anomalyDetection).run(df)
   }
 
   def postprocess(
-    df: DataFrame,
+    df: DataFrame
   ): DataFrame = {
     PostprocessRunner(this).run(df)
   }

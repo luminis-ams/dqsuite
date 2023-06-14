@@ -5,27 +5,34 @@ import com.amazon.deequ.checks.CheckStatus
 import com.amazon.deequ.metrics.Metric
 import com.amazon.deequ.{VerificationResult, VerificationSuite}
 import dqsuite.DQSuiteDatasetContext
-import dqsuite.deequ.{AnomalyDetectionInstance, DeequAnalyserFactory, DeequAnomalyDetectorFactory, DeequCheckFactory}
+import dqsuite.deequ.{AnomalyDetectionInstance, DeequAnalyzerFactory, DeequAnomalyDetectorFactory, DeequCheckFactory}
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 
 import java.time.Instant
 
+/** The ValidationRunner is responsible for quality metrics collection, checks execution and anomaly detection.
+  * @param context
+  *   The context of the dataset to validate
+  * @param anomalyDetection
+  *   Whether to run anomaly detection or not
+  */
 private[dqsuite] case class ValidationRunner(
   context: DQSuiteDatasetContext,
-  anomalyDetection: Boolean = true,
+  anomalyDetection: Boolean = true
 ) {
   private val logger = LogManager.getLogger()
 
   def run(
-    df: DataFrame,
+    df: DataFrame
   ): VerificationResult = {
+    // Instantiate deequ objects for checks, analyzers and anomaly detectors.
     val checks = DeequCheckFactory.buildSeq(context.config)
     if (checks.isEmpty) {
       logger.warn("No checks found for dataset")
     }
 
-    val analyzers = DeequAnalyserFactory.buildSeq(context.config)
+    val analyzers = DeequAnalyzerFactory.buildSeq(context.config)
     if (analyzers.isEmpty) {
       logger.warn("No analyzers found for dataset")
     }
@@ -43,12 +50,13 @@ private[dqsuite] case class ValidationRunner(
       return VerificationResult(
         CheckStatus.Success,
         Map(),
-        Map(),
+        Map()
       )
     }
 
     val checksPath = context.resultPath.resolve("checks.json")
 
+    // Run deequ validation and store results in defined repositories.
     logger.info("Running validation")
     var suite = VerificationSuite()
       .onData(df)
@@ -63,9 +71,11 @@ private[dqsuite] case class ValidationRunner(
 
     // Hack to get around type erasure.
     def addAnomalyCheck[S <: State[S]](instance: AnomalyDetectionInstance) = {
-      suite.addAnomalyCheck(instance.strategy,
-                            instance.analyser.asInstanceOf[Analyzer[S, Metric[Double]]],
-                            Some(instance.config))
+      suite.addAnomalyCheck(
+        instance.strategy,
+        instance.analyser.asInstanceOf[Analyzer[S, Metric[Double]]],
+        Some(instance.config)
+      )
     }
 
     // Do a check so runs where there is no data yet are not anomalous.

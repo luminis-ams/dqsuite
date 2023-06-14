@@ -3,6 +3,7 @@ package dqsuite.repository.cloudwatch
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.metrics.{DoubleMetric, Metric}
 import com.amazon.deequ.repository.ResultKey
+import dqsuite.repository.cloudwatch.CloudWatchAnalysisResultSerde.logger
 import dqsuite.repository.timestream.TimestreamAnalysisResultSerde.logger
 import org.apache.logging.log4j.LogManager
 import software.amazon.awssdk.services.cloudwatch.model.{Dimension, MetricDatum, StandardUnit}
@@ -16,8 +17,8 @@ private[dqsuite] object CloudWatchAnalysisResultSerde {
   val logger = LogManager.getLogger()
 
   val TAGS_PREFIX_FIELD = "tags_"
-  val ENTITY_FIELD = "entity"
-  val INSTANCE_FIELD = "instance"
+  val ENTITY_FIELD      = "entity"
+  val INSTANCE_FIELD    = "instance"
 
   def analysisResultToCloudWatchDatums(
     resultKey: ResultKey,
@@ -42,12 +43,11 @@ private[dqsuite] object CloudWatchAnalysisResultSerde {
 
     val datums = analyzerContext.allMetrics
       .groupBy(metric => (metric.entity.toString, metric.instance, metric.name))
-      .map({
-        case (key, metricGroup) =>
-          if (metricGroup.size > 1) {
-            logger.warn(s"Multiple metrics with the same identity $key.")
-          }
-          metricGroup.head
+      .map({ case (key, metricGroup) =>
+        if (metricGroup.size > 1) {
+          logger.warn(s"Multiple metrics with the same identity $key.")
+        }
+        metricGroup.head
       })
       .flatMap(metric => metricToRecord(metric, baseMetricBuilder))
       .toSeq
@@ -69,7 +69,7 @@ private[dqsuite] object CloudWatchAnalysisResultSerde {
         .builder()
         .name(INSTANCE_FIELD)
         .value(metric.instance)
-        .build(),
+        .build()
     )
 
     val measureValue = metric match {

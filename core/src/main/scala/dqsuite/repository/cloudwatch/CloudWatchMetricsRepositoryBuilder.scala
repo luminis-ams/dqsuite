@@ -7,22 +7,28 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchClient
 
 import java.time.Duration
 
+/** Builds a [[CloudWatchMetricsRepository]] with the given configuration.
+  * @param namespace
+  *   The CloudWatch namespace to save metrics to
+  */
 case class CloudWatchMetricsRepositoryBuilder(
-  namespace: Option[String] = None,
+  namespace: Option[String] = None
 ) {
   def useNamespace(namespace: String): CloudWatchMetricsRepositoryBuilder =
     copy(namespace = Some(namespace))
 
   def build: CloudWatchMetricsRepository = {
     val httpClientBuilder = ApacheHttpClient.builder
-      .maxConnections(5000)
+      .maxConnections(CloudWatchMetricsRepositoryBuilder.CLIENT_MAX_CONNECTIONS)
 
     val retryPolicy = RetryPolicy.builder
-      .numRetries(10)
+      .numRetries(CloudWatchMetricsRepositoryBuilder.CLIENT_NUM_RETRIES)
       .build
 
     val overrideConfig = ClientOverrideConfiguration.builder
-      .apiCallAttemptTimeout(Duration.ofSeconds(20))
+      .apiCallAttemptTimeout(
+        Duration.ofSeconds(CloudWatchMetricsRepositoryBuilder.CLIENT_API_TIMEOUT_SECONDS)
+      )
       .retryPolicy(retryPolicy)
       .build
 
@@ -39,5 +45,9 @@ case class CloudWatchMetricsRepositoryBuilder(
 }
 
 object CloudWatchMetricsRepositoryBuilder {
+  private val CLIENT_MAX_CONNECTIONS     = 5000
+  private val CLIENT_NUM_RETRIES         = 10
+  private val CLIENT_API_TIMEOUT_SECONDS = 20
+
   def builder: CloudWatchMetricsRepositoryBuilder = new CloudWatchMetricsRepositoryBuilder()
 }

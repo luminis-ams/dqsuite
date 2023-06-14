@@ -6,8 +6,8 @@ import org.apache.spark.sql.SparkSession
 private[dqsuite] object HdfsUtils {
   /* Make sure we write to the correct filesystem, as EMR clusters also have an internal HDFS */
   def asQualifiedPath(session: SparkSession, path: String): (FileSystem, Path) = {
-    val hdfsPath = new Path(path)
-    val fs = hdfsPath.getFileSystem(session.sparkContext.hadoopConfiguration)
+    val hdfsPath      = new Path(path)
+    val fs            = hdfsPath.getFileSystem(session.sparkContext.hadoopConfiguration)
     val qualifiedPath = hdfsPath.makeQualified(fs.getUri, fs.getWorkingDirectory)
 
     (fs, qualifiedPath)
@@ -17,7 +17,7 @@ private[dqsuite] object HdfsUtils {
   def readFromFileOnDfs[T](session: SparkSession, path: String)(readFunc: FSDataInputStream => T): T = {
 
     val (fs, qualifiedPath) = asQualifiedPath(session, path)
-    val input = fs.open(qualifiedPath)
+    val input               = fs.open(qualifiedPath)
 
     try {
       readFunc(input)

@@ -3,20 +3,20 @@ package dqsuite.repository.timestream
 import com.amazon.deequ.analyzers.runners.AnalyzerContext
 import com.amazon.deequ.metrics.{DoubleMetric, Metric}
 import com.amazon.deequ.repository.ResultKey
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.{LogManager, Logger}
 import software.amazon.awssdk.services.timestreamwrite.model.{Dimension, MeasureValueType, Record, TimeUnit}
 
 import scala.jdk.CollectionConverters.seqAsJavaListConverter
 import scala.util.Success
 
 private[dqsuite] object TimestreamAnalysisResultSerde {
-  val logger = LogManager.getLogger()
+  val logger: Logger = LogManager.getLogger()
 
 //  val DATASET_DATE_FIELD = "dataSetDate"
   val TAGS_PREFIX_FIELD = "tags_"
-  val ENTITY_FIELD = "entity"
-  val INSTANCE_FIELD = "instance"
-  val NAME_FIELD = "name"
+  val ENTITY_FIELD      = "entity"
+  val INSTANCE_FIELD    = "instance"
+  val NAME_FIELD        = "name"
 //  val VALUE_FIELD = "value"
 
   def analysisResultToTimescaleRecords(
@@ -43,12 +43,11 @@ private[dqsuite] object TimestreamAnalysisResultSerde {
 
     val records = analyzerContext.allMetrics
       .groupBy(metric => (metric.entity.toString, metric.instance, metric.name))
-      .map({
-        case (key, metricGroup) =>
-          if (metricGroup.size > 1) {
-            logger.warn(s"Multiple metrics with the same identity $key.")
-          }
-          metricGroup.head
+      .map({ case (key, metricGroup) =>
+        if (metricGroup.size > 1) {
+          logger.warn(s"Multiple metrics with the same identity $key.")
+        }
+        metricGroup.head
       })
       .flatMap(metricToRecord)
       .toSeq
@@ -57,7 +56,7 @@ private[dqsuite] object TimestreamAnalysisResultSerde {
   }
 
   def metricToRecord(
-    metric: Metric[_],
+    metric: Metric[_]
   ): Option[Record] = {
     val dimensions = Seq(
       Dimension

@@ -4,14 +4,12 @@ import com.amazon.deequ.checks.Check
 import dqsuite.config.{CheckConfig, SourceConfig}
 import dqsuite.utils.RuntimeCompileUtils
 
+/** Factory for building Deequ Checks from configuration.
+  */
 private[dqsuite] object DeequCheckFactory {
-  private def build(config: CheckConfig): Option[Check] = {
-    if (!config.enabled) {
-      return None
-    }
-
-    val level = config.level.toString
-    val name = config.name.getOrElse(s"Check failed for ${config.column}")
+  private def build(config: CheckConfig): Check = {
+    val level      = config.level.toString
+    val name       = config.name.getOrElse(s"Check failed for ${config.column}")
     val expression = config.expression.replace("@", s""""${config.column}"""")
     val source =
       s"""
@@ -21,12 +19,14 @@ private[dqsuite] object DeequCheckFactory {
     """.stripMargin
 
     val check = RuntimeCompileUtils.evaluate(source).asInstanceOf[Check]
-    Some(check)
+    check
   }
 
   def buildSeq(
-    config: SourceConfig,
+    config: SourceConfig
   ): Seq[Check] = {
-    config.checks.flatMap(DeequCheckFactory.build)
+    config.checks
+      .filter(_.enabled)
+      .map(DeequCheckFactory.build)
   }
 }

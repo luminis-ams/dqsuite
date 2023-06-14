@@ -1,0 +1,24 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-yaml
+      - id: check-xml
+
+
+  - repo: local
+    hooks:
+      - id: sbt-scalafmt
+        name: sbt-scalafmt
+        entry: sbt scalafmt
+        language: system
+        types: [ scala ]
+        pass_filenames: false
+      - id: sbt-scalastyle
+        name: sbt-scalastyle
+        entry: sbt scalastyle
+        language: system
+        types: [ scala ]
+        pass_filenames: false

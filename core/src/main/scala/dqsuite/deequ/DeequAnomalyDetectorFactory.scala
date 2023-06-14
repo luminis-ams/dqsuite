@@ -10,31 +10,29 @@ import dqsuite.utils.RuntimeCompileUtils
 
 import java.time.Instant
 
+/** Factory for building Deequ Analyzers from configuration.
+  */
 private[dqsuite] object DeequAnomalyDetectorFactory {
   private def build(
     datasetDate: Option[Instant],
     config: AnomalyDetectionConfig,
-    withTags: Map[String, String] = Map.empty,
-  ): Option[AnomalyDetectionInstance] = {
-    if (!config.enabled) {
-      return None
-    }
-
+    withTags: Map[String, String] = Map.empty
+  ): AnomalyDetectionInstance = {
     val expression = config.strategy.replace("@", s""""${config.column}"""")
     val source =
       s"""
          |import com.amazon.deequ.anomalydetection._
          |$expression
-  """.stripMargin
+    """.stripMargin
     val strategy = RuntimeCompileUtils.evaluate(source).asInstanceOf[AnomalyDetectionStrategy]
 
     val analyser =
-      DeequAnalyserFactory.build(config.analyser).head.asInstanceOf[Analyzer[_ <: State[_], Metric[Double]]]
+      DeequAnalyzerFactory.build(config.analyser).head.asInstanceOf[Analyzer[_ <: State[_], Metric[Double]]]
 
-    val level = CheckLevel.withName(config.level.toString.capitalize)
+    val level       = CheckLevel.withName(config.level.toString.capitalize)
     val description = config.description.getOrElse(s"Anomaly detected for ${config.column}")
 
-    val dateTo = datasetDate.getOrElse(Instant.now()).toEpochMilli
+    val dateTo   = datasetDate.getOrElse(Instant.now()).toEpochMilli
     val dateFrom = config.historyWindow.map(w => dateTo - w)
 
     val anomalyCheckConfig = AnomalyCheckConfig(
@@ -42,23 +40,25 @@ private[dqsuite] object DeequAnomalyDetectorFactory {
       description,
       config.withTags ++ withTags,
       dateFrom,
-      dateFrom.map(_ => dateTo),
+      dateFrom.map(_ => dateTo)
     )
 
-    Some(AnomalyDetectionInstance(analyser, strategy, anomalyCheckConfig))
+    AnomalyDetectionInstance(analyser, strategy, anomalyCheckConfig)
   }
 
   def buildSeq(
     datasetDate: Option[Instant],
     config: SourceConfig,
-    withTags: Map[String, String] = Map.empty,
+    withTags: Map[String, String] = Map.empty
   ): Seq[AnomalyDetectionInstance] = {
-    config.anomalyDetection.flatMap(DeequAnomalyDetectorFactory.build(datasetDate, _, config.tags ++ withTags))
+    config.anomalyDetection
+      .filter(_.enabled)
+      .map(DeequAnomalyDetectorFactory.build(datasetDate, _, config.tags ++ withTags))
   }
 }
 
 private[dqsuite] case class AnomalyDetectionInstance(
   analyser: Analyzer[_ <: State[_], Metric[Double]],
   strategy: AnomalyDetectionStrategy,
-  config: AnomalyCheckConfig,
+  config: AnomalyCheckConfig
 ) {}

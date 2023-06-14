@@ -5,11 +5,11 @@ import dqsuite.DQSuiteDatasetContext
 import org.apache.spark.sql.DataFrame
 
 private[dqsuite] case class PostprocessRunner(
-  context: DQSuiteDatasetContext,
+  context: DQSuiteDatasetContext
 ) {
 
   def run(
-    df: DataFrame,
+    df: DataFrame
   ): DataFrame = {
     // Rename columns
     val schemaColumnAliases = context.config.schema

@@ -8,18 +8,26 @@ import software.amazon.awssdk.services.timestreamwrite.model.{RejectedRecordsExc
 
 import scala.jdk.CollectionConverters.seqAsJavaListConverter
 
+/** Implements [[com.amazon.deequ.repository.MetricsRepository]] to save metrics to AWS Timestream time series database.
+  * @param timestreamWriteClient
+  *   The AWS SDK Timestream client
+  * @param databaseName
+  *   The Timestream database name
+  * @param tableName
+  *   The Timestream table name
+  */
 private[dqsuite] class TimestreamMetricsRepository(
   timestreamWriteClient: TimestreamWriteClient,
   databaseName: String,
-  tableName: String,
+  tableName: String
 ) extends MetricsRepository {
   val logger = LogManager.getLogger()
 
   override def save(resultKey: ResultKey, analyzerContext: AnalyzerContext): Unit = {
-    val (commonAttributes, records) = TimestreamAnalysisResultSerde.analysisResultToTimescaleRecords(resultKey, analyzerContext)
+    val (commonAttributes, records) =
+      TimestreamAnalysisResultSerde.analysisResultToTimescaleRecords(resultKey, analyzerContext)
 
-    val writeRecordsStatement = WriteRecordsRequest
-      .builder
+    val writeRecordsStatement = WriteRecordsRequest.builder
       .databaseName(databaseName)
       .tableName(tableName)
       .records(records.asJava)
@@ -32,9 +40,10 @@ private[dqsuite] class TimestreamMetricsRepository(
     } catch {
       case e: RejectedRecordsException => {
         logger.error(s"RejectedRecordsException: ${e.getMessage}")
-        e.rejectedRecords().forEach(record => {
-          logger.error(s"RejectedRecord: ${record.toString}")
-        })
+        e.rejectedRecords()
+          .forEach(record => {
+            logger.error(s"RejectedRecord: ${record.toString}")
+          })
       }
       case e: Exception => {
         logger.error(s"Exception: ${e.getMessage}")

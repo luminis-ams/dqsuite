@@ -1,12 +1,17 @@
 package dqsuite.deequ
 
 import com.amazon.deequ.schema.RowLevelSchema
-import dqsuite.config.{DecimalColumnConfig, IntColumnConfig, SchemaColumnDefinitionConfig, SchemaExprConfig, SourceConfig, StringColumnConfig, TimestampColumnConfig}
+import dqsuite.config.{
+  DecimalColumnConfig, IntColumnConfig, SchemaColumnDefinitionConfig, SchemaExprConfig, SourceConfig,
+  StringColumnConfig, TimestampColumnConfig
+}
 import dqsuite.utils.RuntimeCompileUtils
 
+/** Factory for building Deequ Schema from configuration.
+  */
 private[dqsuite] object DeequSchemaFactory {
   def build(
-    config: SchemaColumnDefinitionConfig,
+    config: SchemaColumnDefinitionConfig
   ): RowLevelSchema = {
     config match {
       case col: StringColumnConfig => {
@@ -39,8 +44,10 @@ private[dqsuite] object DeequSchemaFactory {
     }
   }
 
+  /** Build a Deequ Schema checks for a given source configuration.
+    */
   def buildSeq(
-    config: SourceConfig,
+    config: SourceConfig
   ): RowLevelSchema = {
     val columnDefinitions = config.schema
       .getOrElse(Seq.empty)

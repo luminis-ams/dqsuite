@@ -3,7 +3,6 @@ package dqsuite
 import com.amazon.deequ.repository.fs.FileSystemMetricsRepository
 import com.amazon.deequ.repository.{MetricsRepository, ResultKey}
 import dqsuite.config.DQSuiteConfig
-import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.SparkSession
 
 import java.net.URI
@@ -14,15 +13,13 @@ case class DQSuiteContext(
   metricsPath: URI,
   resultPath: URI,
   empheralRespositories: Seq[MetricsRepository],
-  spark: SparkSession,
+  spark: SparkSession
 ) {
-  private val logger = LogManager.getLogger()
-
   def withDataset(
     name: String,
     datasetTimestamp: Option[Instant] = None,
     runName: Option[String] = None,
-    partition: Option[String] = None,
+    partition: Option[String] = None
   ): DQSuiteDatasetContext = {
     val sourceConfig = config.sources.get(name) match {
       case Some(config) => config
@@ -35,13 +32,13 @@ case class DQSuiteContext(
     val resultKey = ResultKey(
       datasetTimestamp.getOrElse(Instant.now()).toEpochMilli,
       Map(
-        "dataset" -> name,
-        "run_name" -> runNameOuter,
+        "dataset"                    -> name,
+        "run_name"                   -> runNameOuter
       ) ++ partition.map("partition" -> _) ++ sourceConfig.tags
     )
 
-    val resultPath = this.resultPath.resolve(s"$name/").resolve(s"./runName=$runNameOuter/")
-    val metricsPath = this.metricsPath.resolve(s"$name/")
+    val resultPath     = this.resultPath.resolve(s"$name/").resolve(s"./runName=$runNameOuter/")
+    val metricsPath    = this.metricsPath.resolve(s"$name/")
     val repositoryPath = metricsPath.resolve("repository/").resolve("metrics.json")
 
     val repository = FileSystemMetricsRepository(spark, repositoryPath.toString)
@@ -52,8 +49,7 @@ case class DQSuiteContext(
       metricsPath = metricsPath,
       resultPath = resultPath,
       resultKey = resultKey,
-      repository = repository,
+      repository = repository
     )
   }
-
 }
