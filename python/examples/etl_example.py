@@ -1,11 +1,20 @@
 from pyspark.sql import SparkSession, types as T, functions as F
+import argparse
 
 from dqsuite import DQSuiteContextBuilder
 
 spark = SparkSession.builder.getOrCreate()
 
-source_file_path = "../data/iowa_liquor_sales_demo/iowa_liquor_sales_01.csv"
-dq_config_path = "../data/dataquality.yml"
+# Parse Arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--input_file_path", help="Path to source file")
+parser.add_argument("--config_path", help="Path to config file")
+
+args, _ = parser.parse_known_args()
+
+
+input_file_path = args.input_file_path
+config_path = args.config_path
 dq_output_path = "../out"
 dq_profile = False
 dq_anomaly_detection = True
@@ -13,10 +22,9 @@ dq_anomaly_detection = True
 # Set up Data Quality Context
 dqsContext = (
     DQSuiteContextBuilder.builder(spark)
-    .withConfigPath(dq_config_path)
+    .withConfigPath(config_path)
     .withResultPath(f"{dq_output_path}/results")
     .withMetricsPath(f"{dq_output_path}/metrics")
-    .withCloudwatchRepository("dqsuite/etl/example")
     .build()
 )
 
@@ -25,7 +33,7 @@ df_raw = (
     spark.read
     .option("header", "true")
     .option("inferSchema", "false")
-    .csv(source_file_path)
+    .csv(input_file_path)
 )
 
 # Raw Data Quality Checks

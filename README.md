@@ -137,7 +137,8 @@ Checks are used to validate the data quality.
 * **name**: Name of the check.
 * **expression**: Deequ check expression to run on the column. (`@` is substituted with the column name)
 * **enabled**: Whether to run the check or not. (default: true)
-    * See [deequ Checks](https://github.com/awslabs/deequ/blob/master/src/main/scala/com/amazon/deequ/checks/Check.scala)
+    *
+    See [deequ Checks](https://github.com/awslabs/deequ/blob/master/src/main/scala/com/amazon/deequ/checks/Check.scala)
     for options.
 
 ### Anomaly Detection
@@ -149,7 +150,8 @@ Anomaly detection is used to detect anomalies in the metrics produced by the ana
 * **description**: Description of the anomaly.
 * **expression**: Deequ analyzer expression to run on the column. (`@` is substituted with the column name)
 * **strategy**: Strategy to use for anomaly detection.
-    * See [deequ Anomaly Detection Strategies](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/anomalydetection)
+    *
+    See [deequ Anomaly Detection Strategies](https://github.com/awslabs/deequ/tree/master/src/main/scala/com/amazon/deequ/anomalydetection)
     for options
 * **window**: Window (in seconds) to use for historical metric gathering. (default: infinite)
 * **enabled**: Whether to run the check or not. (default: true)
@@ -203,6 +205,7 @@ validationResult.status match {
 ```
 
 Finally, you can apply postprocessing for quick data transformation. Following transformations are supported:
+
 * Column renaming: (if `alias` is specified in schema config)
 
 ```scala
@@ -258,6 +261,7 @@ else:
 ```
 
 Finally, you can apply postprocessing for quick data transformation. Following transformations are supported:
+
 * Column renaming: (if `alias` is specified in schema config)
 
 ```python
@@ -265,6 +269,8 @@ dfPostProcessed = dsContext.postprocess(df)
 ```
 
 ## Deployment
+
+Download the latest release from the [releases](https://github.com/luminis-ams/dqsuite/releases) page.
 
 ### Glue Scala ETL Script
 
@@ -298,24 +304,31 @@ If you want to use the dataquality suite in your scripts you need additional pyt
 
 5. See `python/examples` folder for examples of how to use the suite.
 
-## Publishing
+## Examples
 
-### Python
-```shell
+Run Scala examples using the following command:
+
+```bash
+spark-submit \
+  --master local --deploy-mode client \
+  --class ETLExample --name dataquality \
+  --jars core/target/scala-2.12/deequ-2.0.3-spark-3.3.jar,core/target/scala-2.12/dqsuite-bundle_2.12-0.2.0.jar \
+  examples/target/scala-2.12/examples_2.12-0.2.0.jar \
+  --input_file_path=examples/data/iowa_liquor_sales_demo/iowa_liquor_sales_01.csv \
+  --config_path=examples/data/example.yml
+```
+
+The results will be written to `./out/results` and metrics to `./out/metrics`.
+
+Run Python examples using the following command:
+
+```bash
 cd python
-
-aws codeartifact login --tool twine --domain my_domain --domain-owner 111122223333 --repository my_repo
-
-twine upload --repository codeartifact dist/dqsuite-0.1.0-py3-none-any.whl
+spark-submit \
+  --jars ../core/target/scala-2.12/deequ-2.0.3-spark-3.3.jar,../core/target/scala-2.12/dqsuite-bundle_2.12-0.2.0.jar \
+  ./examples/etl_example.py \
+  --input_file_path=../examples/data/iowa_liquor_sales_demo/iowa_liquor_sales_01.csv \
+  --config_path=../examples/data/example.yml
 ```
 
-
-### Scala
-```shell
-export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain my_domain --domain-owner 111122223333 --query authorizationToken --output text --profile profile-name
-
-curl --request PUT https://my_domain-111122223333.d.codeartifact.us-west-2.amazonaws.com/maven/my_repo/com/mycompany/app/my-app/1.0/my-app-1.0.jar \
-     --user "aws:$CODEARTIFACT_AUTH_TOKEN" --header "Content-Type: application/octet-stream" \
-     --data-binary @out/libs/dqsuite-bundle_2.12-0.2.0.jar
-
-```
+The results will be written to `./out/results` and metrics to `./out/metrics`.

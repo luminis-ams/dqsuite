@@ -1,48 +1,62 @@
 sources:
-  sales:
+  sales_raw:
     schema:
       - column: "Invoice/Item Number"
+        alias: invoice_item_number
         type: string
         is_nullable: false
       - column: "Date"
+        alias: date
         type: string
-#        mask: "yyyy-MM-dd"
         is_nullable: false
       - column: "Store Name"
+        alias: store_name
         type: string
       - column: "Address"
+        alias: address
         type: string
       - column: "City"
+        alias: city
         type: string
       - column: "Zip Code"
-        type: string
         alias: zip_code
+        type: string
       - column: "County"
+        alias: county
         type: string
       - column: "Category Name"
+        alias: category_name
         type: string
       - column: "Vendor Name"
+        alias: vendor_name
         type: string
       - column: "Item Number"
+        alias: item_number
         type: int
         is_nullable: false
       - column: "Item Description"
+        alias: item_description
         type: string
       - column: "Bottle Volume (ml)"
+        alias: bottle_volume_ml
         type: decimal
         precision: 10
         scale: 2
       - column: "State Bottle Cost"
+        alias: state_bottle_cost
         type: decimal
         precision: 10
         scale: 2
       - column: "Bottles Sold"
+        alias: bottles_sold
         type: int
       - column: "Sale"
+        alias: sale
         type: decimal
         precision: 12
         scale: 2
       - column: "Volume Sold (Liters)"
+        alias: volume_sold_liters
         type: decimal
         precision: 12
         scale: 2
@@ -87,19 +101,151 @@ sources:
         name: "Dataset must not be empty"
         expression: .hasSize(n => n > 0, Some("Dataset must not be empty"))
       - column: "Date"
-        level: warning
+        level: error
         name: "Date validation"
         expression: >
           .hasPattern(@, "^[0-9]{4}-[0-9]{2}-[0-9]{2}$".r)
           .isComplete(@)
+      - column: "Zip Code"
+        level: warning
+        name: "Zip Code validation"
+        expression: >
+          .hasPattern(@, "^[0-9]{5}$".r)
+          .isComplete(@)
       - column: "Item Number"
         expression: .isComplete(@)
       - column: "Bottles Sold"
-        expression: .hasDataType(@, ConstrainableDataTypes.Integral)
+        expression: >
+          .hasDataType(@, ConstrainableDataTypes.Integral)
+  #    anomaly_detection:
+  #      - column: "Dataset"
+  #        level: error
+  #        description: "Dataset size must not be anomalous"
+  #        expression: Size()
+  #        strategy: OnlineNormalStrategy(lowerDeviationFactor = Some(3.0), upperDeviationFactor = Some(3.0))
+  #        window: 604800
+  #      - column: "Volume Sold (Liters)"
+  #        level: error
+  #        description: "Volume Sold (Liters) must not be anomalous"
+  #        expression: Mean(@)
+  #        strategy: OnlineNormalStrategy(lowerDeviationFactor = Some(3.0), upperDeviationFactor = Some(3.0))
+  #        window: 604800
+  sales_processed:
+    schema:
+      - column: "invoice_item_number"
+        type: string
+        is_nullable: false
+      - column: "date"
+        type: string
+        is_nullable: false
+      - column: "store_name"
+        type: string
+      - column: "address"
+        type: string
+      - column: "city"
+        type: string
+      - column: "zip_code"
+        type: string
+      - column: "county"
+        type: string
+      - column: "category_name"
+        type: string
+      - column: "vendor_name"
+        type: string
+      - column: "item_number"
+        type: int
+        is_nullable: false
+      - column: "item_description"
+        type: string
+      - column: "bottle_volume_ml"
+        type: decimal
+        precision: 10
+        scale: 2
+      - column: "state_bottle_cost"
+        type: decimal
+        precision: 10
+        scale: 2
+      - column: "bottles_sold"
+        type: int
+      - column: "sale"
+        type: decimal
+        precision: 12
+        scale: 2
+      - column: "volume_sold_liters"
+        type: decimal
+        precision: 12
+        scale: 2
+    analyzers:
+      - column: "Dataset"
+        expression: Size()
+      - column: "invoice_item_number"
+        expression: Completeness(@)::Uniqueness(@)
+      - column: "date"
+        expression: Completeness(@)::PatternMatch(@, "^[0-9]{4}-[0-9]{2}-[0-9]{2}$".r)
+      - column: "store_name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "address"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "city"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "zip_code"
+        expression: Completeness(@)::PatternMatch(@, "^[0-9]{5}$".r)
+      - column: "county"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "category_name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "vendor_name"
+        expression: Completeness(@)::ApproxCountDistinct(@)
+      - column: "item_number"
+        expression: Completeness(@)::ApproxCountDistinct(@)::Distinctness(@)
+      - column: "item_description"
+        expression: Completeness(@)
+      - column: "bottle_volume_ml"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "state_bottle_cost"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "bottles_sold"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "sale"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+      - column: "volume_sold_liters"
+        expression: Completeness(@)::Minimum(@)::Maximum(@)::Mean(@)::StandardDeviation(@)::ApproxQuantile(@, 0.5)
+    checks:
+      - column: "Dataset"
+        level: error
+        name: "Dataset must not be empty"
+        expression: .hasSize(n => n > 0, Some("Dataset must not be empty"))
+      - column: "invoice_item_number"
+        level: error
+        name: "Invoice item number must be unique"
+        expression: .isUnique(@)
+      - column: "date"
+        level: error
+        name: "Date validation"
+        expression: >
+          .hasPattern(@, "^[0-9]{4}-[0-9]{2}-[0-9]{2}$".r)
+          .isComplete(@)
+      - column: "zip_code"
+        level: warning
+        name: "Zip Code validation"
+        expression: >
+          .hasPattern(@, "^[0-9]{5}$".r)
+          .isComplete(@)
+      - column: "item_number"
+        expression: .isComplete(@)
+      - column: "bottles_sold"
+        expression: >
+          .hasDataType(@, ConstrainableDataTypes.Integral)
     anomaly_detection:
       - column: "Dataset"
         level: error
         description: "Dataset size must not be anomalous"
         expression: Size()
+        strategy: OnlineNormalStrategy(lowerDeviationFactor = Some(3.0), upperDeviationFactor = Some(3.0))
+        window: 604800
+      - column: "volume_sold_liters"
+        level: error
+        description: "Volume Sold (Liters) must not be anomalous"
+        expression: Mean(@)
         strategy: OnlineNormalStrategy(lowerDeviationFactor = Some(3.0), upperDeviationFactor = Some(3.0))
         window: 604800
