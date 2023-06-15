@@ -1,0 +1,75 @@
+name: Release
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  release_scala:
+    name: Release Scala Jar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install sbt
+        uses: coursier/setup-action@v1
+        with:
+          apps: sbt
+      - name: Set up cache for sbt
+        uses: coursier/cache-action@v6
+      - name: Build package jars
+        run: sbt "project core; sanity; copyJarsTask"
+        env:
+          VERSION: ${{ github.ref_name }}
+      - name: Add package artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dqsuite-bundle-jar
+          path: core/target/scala-2.12/dqsuite-bundle_2.12-*.jar
+          retention-days: 5
+
+  release_python:
+    name: Release Python Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install poetry
+        uses: snok/install-poetry@v1
+      - name: Update package version in pyproject.toml
+        run: sed -i "s/^version = .*/version = \"${GITHUB_REF#refs/tags/}\"/" python/pyproject.toml
+      - name: Build package
+        working-directory: ./python
+        run: poetry build
+      - name: Add package artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dqsuite-wheel
+          path: python/dist/dqsuite-*-py3-none-any.whl
+          retention-days: 5
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [ release_scala, release_python ]
+    permissions:
+      contents: write
+    steps:
+      - name: Download Scala artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dqsuite-bundle-jar
+          path: artifacts
+      - name: Download Python artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dqsuite-wheel
+          path: artifacts
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/dqsuite-bundle_2.12-*.jar
+            artifacts/dqsuite-*-py3-none-any.whl

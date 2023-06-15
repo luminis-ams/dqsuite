@@ -12,7 +12,7 @@ val scalaVersion_ = s"$scalaCompatVersion.15"
 val awsSdkVersion = "2.20.32"
 val awsJavaSdkVersion = "1.12.128"
 
-ThisBuild / version := "0.2.0"
+ThisBuild / version := sys.env.getOrElse("VERSION", "0.2.0")
 ThisBuild / scalaVersion := scalaVersion_
 
 lazy val root = (project in file("."))
@@ -28,7 +28,7 @@ lazy val core = (project in file("core"))
     commonSettings,
     assemblyPackageScala / assembleArtifact := false,
     assembly / assemblyJarName := s"$projectName-bundle_$scalaCompatVersion-${version.value}.jar",
-    assembly / assemblyOutputPath := file(s"out/libs/${(assembly / assemblyJarName).value}"),
+//    assembly / assemblyOutputPath := file(s"out/libs/${(assembly / assemblyJarName).value}"),
     name := projectName,
     libraryDependencies ++= commonDependencies ++ coreDependencies
   )
@@ -72,7 +72,8 @@ lazy val examplesSettings = Seq(
 
 lazy val commonSettings = Seq(
   copyJarsTask := {
-    val folder = new File("out/libs")
+    val folder: File = new File((Compile / packageBin / artifactPath).value.getParent)
+    println(s"Copying artifacts to ${folder}")
 
     // Copy dependencies
     (Compile / managedClasspath).value.files
@@ -81,10 +82,5 @@ lazy val commonSettings = Seq(
         println(s"Copying ${f.getName}")
         IO.copyFile(f, folder / f.getName, CopyOptions().withOverwrite(false))
       }
-
-    // Copy artifacts
-    val (_, f) = (Compile / packageBin / packagedArtifact).value
-    println(s"Copying artifacts ${f.getName}")
-    IO.copyFile(f, folder / f.getName, CopyOptions().withOverwrite(true))
   }
 )
